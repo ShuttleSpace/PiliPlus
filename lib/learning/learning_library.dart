@@ -1,4 +1,5 @@
 import 'package:PiliPlus/learning/learning_list.dart';
+import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:get/get.dart';
@@ -138,6 +139,7 @@ class LearningLibrary {
     'exportedAt': DateTime.now().toIso8601String(),
     'lists': exportJson(),
     'sources': LearningSources.instance.exportJson(),
+    'progress': LearningProgress.instance.exportJson(),
   };
 
   /// 导入前先解析，供 UI 做 diff 预览，不改动当前状态。
@@ -174,6 +176,10 @@ class LearningLibrary {
     loadFromJson(preview.map((list) => list.toJson()).toList());
     LearningSources.instance.loadFromJson(
       sourcesPreview.map((source) => source.toJson()).toList(),
+    );
+    final rawProgress = backup['progress'];
+    LearningProgress.instance.loadFromJson(
+      rawProgress is List ? rawProgress : const <dynamic>[],
     );
   }
 

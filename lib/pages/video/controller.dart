@@ -12,6 +12,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -910,7 +911,15 @@ class VideoDetailController extends GetxController
         if (progress != null) {
           defaultST = Duration(milliseconds: progress);
         } else {
-          defaultST = Duration(milliseconds: data.lastPlayTime);
+          final local = LearningProgress.instance.get(
+            bvid: bvid,
+            cid: cid.value,
+          );
+          if (local != null && !local.completed && local.positionMs > 0) {
+            defaultST = Duration(milliseconds: local.positionMs);
+          } else {
+            defaultST = Duration(milliseconds: data.lastPlayTime);
+          }
         }
       }
 
@@ -1291,6 +1300,14 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    LearningProgress.instance.record(
+      bvid: bvid,
+      cid: cid.value,
+      title: (args?['title'] as String?) ?? '',
+      cover: cover.value,
+      positionMs: playedTime?.inMilliseconds ?? 0,
+      durationMs: data.timeLength ?? 0,
+    );
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();

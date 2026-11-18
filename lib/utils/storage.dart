@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
+import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
 import 'package:PiliPlus/models/user/info.dart';
@@ -25,6 +26,7 @@ abstract final class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> learningLists;
   static late final Box<dynamic> learningSources;
+  static late final Box<dynamic> learningProgress;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
   static late final Box<Uint8List>? reply;
@@ -59,6 +61,11 @@ abstract final class GStorage {
       Hive.openBox('learningSources').then((res) {
         learningSources = res;
         LearningSources.instance.attach(res);
+      }),
+      // 本地观看进度/历史
+      Hive.openBox('learningProgress').then((res) {
+        learningProgress = res;
+        LearningProgress.instance.attach(res);
       }),
       // 搜索历史
       Hive.openBox(
@@ -139,6 +146,7 @@ abstract final class GStorage {
       setting.compact(),
       learningLists.compact(),
       learningSources.compact(),
+      learningProgress.compact(),
       video.compact(),
       Accounts.account.compact(),
       watchProgress.compact(),
@@ -154,6 +162,7 @@ abstract final class GStorage {
       setting.close(),
       learningLists.close(),
       learningSources.close(),
+      learningProgress.close(),
       video.close(),
       Accounts.account.close(),
       watchProgress.close(),
@@ -169,6 +178,7 @@ abstract final class GStorage {
       setting.clear(),
       learningLists.clear(),
       learningSources.clear(),
+      learningProgress.clear(),
       video.clear(),
       Accounts.clear(),
       watchProgress.clear(),

@@ -54,6 +54,11 @@ class MineController extends GetxController with AccountMixin {
       onTap: () => Get.toNamed('/learningLists'),
     ),
     (
+      icon: Icons.bar_chart,
+      title: '学习统计',
+      onTap: () => Get.toNamed('/learningHistory'),
+    ),
+    (
       icon: CustomIcons.folderDownloadOutline,
       title: '离线缓存',
       onTap: () => Get.toNamed('/download'),
