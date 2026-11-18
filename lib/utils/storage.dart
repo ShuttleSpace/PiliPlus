@@ -11,6 +11,7 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
@@ -70,6 +71,14 @@ abstract final class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
+
+    // 自主订阅模式：首次启动关闭相关推荐与自动连播。
+    if (!setting.containsKey(SettingBoxKey.showRelatedVideo)) {
+      setting.put(SettingBoxKey.showRelatedVideo, false);
+    }
+    if (!setting.containsKey(SettingBoxKey.autoPlayEnable)) {
+      setting.put(SettingBoxKey.autoPlayEnable, false);
+    }
 
     if (Pref.saveReply) {
       reply = await Hive.openBox<Uint8List>(

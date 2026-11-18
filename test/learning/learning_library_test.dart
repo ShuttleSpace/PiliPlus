@@ -61,4 +61,48 @@ void main() {
     library.deleteList(list.id);
     expect(library.lists, isEmpty);
   });
+
+  test('备份包含版本并能原样还原，且不含账号凭证字段', () {
+    final list = library.createList('迁移测试');
+    library.addVideo(
+      listId: list.id,
+      video: LearningVideo(bvid: 'BV4', title: '第四课', cid: 9),
+    );
+
+    final backup = library.toBackup();
+    expect(backup['schemaVersion'], 1);
+    expect(backup.containsKey('cookie'), isFalse);
+    expect(backup.containsKey('token'), isFalse);
+
+    library.loadFromJson(const <dynamic>[]);
+    expect(library.lists, isEmpty);
+
+    library.importBackup(backup);
+    expect(library.lists, hasLength(1));
+    expect(library.lists.first.name, '迁移测试');
+    expect(library.lists.first.videos.first.cid, 9);
+  });
+
+  test('导入前预览不改动当前状态，错误版本被拒绝', () {
+    final current = library.createList('当前');
+    final backup = {
+      'schemaVersion': 1,
+      'lists': [
+        LearningList(
+          id: 'imported',
+          name: '导入的清单',
+          videos: [LearningVideo(bvid: 'BV5', title: '第五课')],
+        ).toJson(),
+      ],
+    };
+
+    final preview = library.previewBackup(backup);
+    expect(preview.single.name, '导入的清单');
+    expect(library.lists.single.id, current.id);
+
+    expect(
+      () => library.previewBackup({'schemaVersion': 99, 'lists': const []}),
+      throwsFormatException,
+    );
+  });
 }

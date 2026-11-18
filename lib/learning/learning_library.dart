@@ -122,6 +122,33 @@ class LearningLibrary {
   List<Map<String, dynamic>> exportJson() =>
       lists.map((list) => list.toJson()).toList();
 
+  /// 备份只含本地规则/清单结构，不含 cookie、账号或观看历史。
+  Map<String, dynamic> toBackup() => {
+    'schemaVersion': 1,
+    'exportedAt': DateTime.now().toIso8601String(),
+    'lists': exportJson(),
+  };
+
+  /// 导入前先解析，供 UI 做 diff 预览，不改动当前状态。
+  List<LearningList> previewBackup(Map<String, dynamic> backup) {
+    if (backup['schemaVersion'] != 1) {
+      throw const FormatException('不支持的备份版本');
+    }
+    final rawLists = backup['lists'];
+    if (rawLists is! List) {
+      throw const FormatException('备份缺少 lists 字段');
+    }
+    return rawLists
+        .whereType<Map>()
+        .map((item) => LearningList.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  void importBackup(Map<String, dynamic> backup) {
+    final preview = previewBackup(backup);
+    loadFromJson(preview.map((list) => list.toJson()).toList());
+  }
+
   void _persist() {
     _box?.put(_listsKey, exportJson());
     lists.refresh();

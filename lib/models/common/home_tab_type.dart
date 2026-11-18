@@ -1,4 +1,6 @@
 import 'package:PiliPlus/models/common/enum_with_label.dart';
+import 'package:PiliPlus/learning/learning_controller.dart';
+import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
 import 'package:PiliPlus/pages/hot/view.dart';
@@ -20,6 +22,7 @@ enum HomeTabType implements EnumWithLabel {
   rank('分区'),
   bangumi('番剧'),
   cinema('影视'),
+  learning('清单'),
   ;
 
   @override
@@ -33,6 +36,7 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.rank => Get.find<RankController>,
     HomeTabType.bangumi ||
     HomeTabType.cinema => () => Get.find<PgcController>(tag: name),
+    HomeTabType.learning => Get.find<LearningController>,
   };
 
   Widget get page => switch (this) {
@@ -42,5 +46,9 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.rank => const RankPage(),
     HomeTabType.bangumi => const PgcPage(tabType: HomeTabType.bangumi),
     HomeTabType.cinema => const PgcPage(tabType: HomeTabType.cinema),
+    HomeTabType.learning => LearningListsView(
+      embedded: true,
+      scrollController: Get.find<LearningController>().scrollController,
+    ),
   };
 }

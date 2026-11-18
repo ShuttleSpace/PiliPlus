@@ -14,6 +14,12 @@ import 'package:material_ui/material_ui.dart' hide StatefulBuilder;
 
 List<SettingsModel> get recommendSettings => [
   NormalModel(
+    title: '算法发现页',
+    subtitle: '已从首页折叠，仅从此入口进入',
+    leading: const Icon(Icons.explore_outlined),
+    onTap: (_, _) => Get.toNamed('/discovery'),
+  ),
+  NormalModel(
     title: '首页推荐来源',
     getSubtitle: () => Pref.rcmdSource.label,
     leading: const Icon(Icons.swap_horiz_outlined),
