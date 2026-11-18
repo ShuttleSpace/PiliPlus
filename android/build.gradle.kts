@@ -2,6 +2,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 allprojects {
     repositories {
+        // jitpack.io 在国内网络下常被中断 TLS 握手；插件传递依赖 ucrop
+        // 以标准 Maven 布局随仓库提供，作为离线可复现的兜底。
+        maven { url = uri(rootProject.file("local-maven")) }
+        // 国内网络下 Java/Gradle 直连 Maven Central 常被代理中断 TLS 握手，
+        // 镜像优先，官方源保留作为 fallback。
+        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        maven { url = uri("https://maven.aliyun.com/repository/central") }
         google()
         mavenCentral()
     }
