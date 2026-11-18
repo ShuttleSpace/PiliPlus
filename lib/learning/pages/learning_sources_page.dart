@@ -2,7 +2,7 @@ import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_refresh.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 

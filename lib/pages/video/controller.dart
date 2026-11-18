@@ -1303,7 +1303,7 @@ class VideoDetailController extends GetxController
     LearningProgress.instance.record(
       bvid: bvid,
       cid: cid.value,
-      title: (args?['title'] as String?) ?? '',
+      title: (args['title'] as String?) ?? '',
       cover: cover.value,
       positionMs: playedTime?.inMilliseconds ?? 0,
       durationMs: data.timeLength ?? 0,

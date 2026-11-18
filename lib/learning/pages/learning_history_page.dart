@@ -1,6 +1,6 @@
 import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class LearningHistoryPage extends StatelessWidget {
