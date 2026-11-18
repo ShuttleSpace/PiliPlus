@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:PiliPlus/models/model_owner.dart';
+import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -20,6 +21,7 @@ abstract final class GStorage {
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;
   static late final Box<dynamic> setting;
+  static late final Box<dynamic> learningLists;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
   static late final Box<Uint8List>? reply;
@@ -45,6 +47,11 @@ abstract final class GStorage {
       ).then((res) => localCache = res),
       // 设置
       Hive.openBox('setting').then((res) => setting = res),
+      // 本地学习清单（自主订阅客户端）
+      Hive.openBox('learningLists').then((res) {
+        learningLists = res;
+        LearningLibrary.instance.attach(res);
+      }),
       // 搜索历史
       Hive.openBox(
         'historyWord',
@@ -114,6 +121,7 @@ abstract final class GStorage {
       historyWord.compact(),
       localCache.compact(),
       setting.compact(),
+      learningLists.compact(),
       video.compact(),
       Accounts.account.compact(),
       watchProgress.compact(),
@@ -127,6 +135,7 @@ abstract final class GStorage {
       historyWord.close(),
       localCache.close(),
       setting.close(),
+      learningLists.close(),
       video.close(),
       Accounts.account.close(),
       watchProgress.close(),
@@ -140,6 +149,7 @@ abstract final class GStorage {
       historyWord.clear(),
       localCache.clear(),
       setting.clear(),
+      learningLists.clear(),
       video.clear(),
       Accounts.clear(),
       watchProgress.clear(),

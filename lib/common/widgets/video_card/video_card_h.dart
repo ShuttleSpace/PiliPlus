@@ -6,12 +6,14 @@ import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.da
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 水平布局
@@ -122,6 +124,19 @@ class VideoCardH extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          Obx(
+            () {
+              final bvid = videoItem.bvid;
+              if (bvid == null || !LearningLibrary.instance.containsAny(bvid)) {
+                return const SizedBox.shrink();
+              }
+              return const Positioned(
+                top: 6,
+                left: 6,
+                child: PBadge(text: '已入清单', type: .secondary),
+              );
+            },
           ),
           Positioned(
             bottom: 0,

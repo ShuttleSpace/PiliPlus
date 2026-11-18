@@ -14,6 +14,9 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/translucent_column.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
+import 'package:PiliPlus/learning/learning_library.dart';
+import 'package:PiliPlus/learning/learning_list.dart';
+import 'package:PiliPlus/learning/widgets/add_to_list_sheet.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/desc_v2.dart';
@@ -526,6 +529,32 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               semanticsLabel: '收藏',
               text: !isLoading ? NumUtils.numFormat(stat!.favorite) : null,
             ),
+          ),
+          Obx(
+            () {
+              final inLists = LearningLibrary.instance.listNamesContaining(
+                introController.bvid,
+              );
+              return ActionItem(
+                icon: const Icon(Icons.playlist_add),
+                selectIcon: const Icon(Icons.playlist_add_check),
+                selectStatus: inLists.isNotEmpty,
+                onTap: () {
+                  final detail = introController.videoDetail.value;
+                  showAddToLearningListSheet(
+                    context,
+                    video: LearningVideo(
+                      bvid: introController.bvid,
+                      title: detail.title ?? '',
+                      cover: detail.pic ?? '',
+                      cid: introController.cid.value,
+                    ),
+                  );
+                },
+                semanticsLabel: '加入学习清单',
+                text: '清单',
+              );
+            },
           ),
           ActionItem(
             icon: const Icon(CustomIcons.download),
