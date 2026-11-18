@@ -1,20 +1,11 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/learning/learning_diff.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
-import 'package:PiliPlus/learning/learning_list.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/common/member/archive_sort_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-
-class RefreshOutcome {
-  const RefreshOutcome(this.added, this.seenBvids, [this.error]);
-
-  final int added;
-  final List<String> seenBvids;
-  final String? error;
-}
 
 /// 只读取白名单接口：UP 投稿列表 / UP 自制合集列表。
 /// diff 与写入清单全部在本地完成。
@@ -51,10 +42,21 @@ class LearningRefresh {
     );
 
     return switch (result) {
-      Success(:final response) => _apply(
+      Success(:final response) => applyRefreshItems(
         source: source,
         library: library,
-        items: response.item ?? const [],
+        items:
+            response.item
+                ?.map(
+                  (item) => LearningRefreshItem(
+                    bvid: item.bvid ?? '',
+                    title: item.title,
+                    cover: item.cover ?? '',
+                    cid: item.cid,
+                  ),
+                )
+                .toList() ??
+            const [],
       ),
       Error(:final errMsg) => RefreshOutcome(
         0,
@@ -63,35 +65,5 @@ class LearningRefresh {
       ),
       Loading() => RefreshOutcome(0, source.seenBvids, '刷新中'),
     };
-  }
-
-  static RefreshOutcome _apply({
-    required LearningSource source,
-    required LearningLibrary library,
-    required List<SpaceArchiveItem> items,
-  }) {
-    final known = source.seenBvids.toSet();
-    final seen = <String>{...known};
-    var added = 0;
-
-    for (final item in items) {
-      final bvid = item.bvid;
-      if (bvid == null || bvid.isEmpty) continue;
-      seen.add(bvid);
-      if (known.contains(bvid)) continue;
-
-      final result = library.addVideo(
-        listId: source.targetListId,
-        video: LearningVideo(
-          bvid: bvid,
-          title: item.title,
-          cover: item.cover ?? '',
-          cid: item.cid,
-        ),
-      );
-      if (result == AddVideoResult.added) added++;
-    }
-
-    return RefreshOutcome(added, seen.toList());
   }
 }
