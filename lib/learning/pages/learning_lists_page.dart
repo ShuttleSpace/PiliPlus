@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
+import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -135,13 +136,16 @@ void _showBackupDialog(BuildContext context) {
         0,
         (sum, list) => sum + list.videos.length,
       );
+      final sourceCount = library.previewBackupSources(json).length;
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('确认导入？'),
           content: Text(
             '将用备份中的 ${preview.length} 个清单（共 $videoCount 个视频）'
-            '覆盖当前的 ${library.lists.length} 个清单。\n'
+            '与 $sourceCount 条订阅规则，覆盖当前的 '
+            '${library.lists.length} 个清单 / '
+            '${LearningSources.instance.sources.length} 条订阅。\n'
             '备份不含账号凭证。',
           ),
           actions: [

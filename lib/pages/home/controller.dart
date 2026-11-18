@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/learning/learning_controller.dart';
+import 'package:PiliPlus/learning/learning_sources_controller.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
@@ -74,9 +75,13 @@ class HomeController extends GetxController
           )
           ..remove(HomeTabType.rcmd)
           ..remove(HomeTabType.learning)
-          ..insert(0, HomeTabType.learning);
+          ..insert(0, HomeTabType.learning)
+          ..remove(HomeTabType.sources)
+          ..insert(1, HomeTabType.sources);
 
-    Get.putOrFind(LearningController.new);
+    Get
+      ..putOrFind(LearningController.new)
+      ..putOrFind(LearningSourcesController.new);
     tabs = configured;
 
     tabController = TabController(

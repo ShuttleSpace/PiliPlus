@@ -1,5 +1,6 @@
 import 'package:PiliPlus/learning/pages/discovery_page.dart';
 import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
+import 'package:PiliPlus/learning/pages/learning_sources_page.dart';
 import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -94,6 +95,7 @@ class Routes {
     GetPage(name: '/later', page: () => const LaterPage()),
     // 本地学习清单（自主订阅客户端）
     GetPage(name: '/learningLists', page: () => const LearningListsPage()),
+    GetPage(name: '/learningSources', page: () => const LearningSourcesPage()),
     // 算法发现页（三级入口）
     GetPage(name: '/discovery', page: () => const DiscoveryPage()),
     // 历史记录

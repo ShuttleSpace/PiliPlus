@@ -1,4 +1,6 @@
 import 'package:PiliPlus/learning/learning_list.dart';
+import 'package:PiliPlus/learning/learning_source.dart';
+import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 
@@ -65,6 +67,14 @@ class LearningLibrary {
     return list;
   }
 
+  /// 订阅刷新结果统一进入这个清单；它只是一个普通清单，用户可自由搬移。
+  String ensureFeedList() {
+    for (final list in lists) {
+      if (list.name == '订阅更新') return list.id;
+    }
+    return createList('订阅更新').id;
+  }
+
   void renameList(String id, String name) {
     final list = find(id);
     if (list == null) return;
@@ -127,6 +137,7 @@ class LearningLibrary {
     'schemaVersion': 1,
     'exportedAt': DateTime.now().toIso8601String(),
     'lists': exportJson(),
+    'sources': LearningSources.instance.exportJson(),
   };
 
   /// 导入前先解析，供 UI 做 diff 预览，不改动当前状态。
@@ -144,9 +155,26 @@ class LearningLibrary {
         .toList();
   }
 
+  /// 与 [previewBackup] 对应，导入前预览订阅规则，不改动当前状态。
+  List<LearningSource> previewBackupSources(Map<String, dynamic> backup) {
+    if (backup['schemaVersion'] != 1) {
+      throw const FormatException('不支持的备份版本');
+    }
+    final raw = backup['sources'];
+    if (raw is! List) return const <LearningSource>[];
+    return raw
+        .whereType<Map>()
+        .map((item) => LearningSource.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
   void importBackup(Map<String, dynamic> backup) {
     final preview = previewBackup(backup);
+    final sourcesPreview = previewBackupSources(backup);
     loadFromJson(preview.map((list) => list.toJson()).toList());
+    LearningSources.instance.loadFromJson(
+      sourcesPreview.map((source) => source.toJson()).toList(),
+    );
   }
 
   void _persist() {
