@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/learning/learning_subscribe.dart';
 import 'package:PiliPlus/models_new/live/live_medal_wall/data.dart';
 import 'package:PiliPlus/models_new/space/space/reservation_card_list.dart';
 import 'package:PiliPlus/pages/coin_log/controller.dart';
@@ -337,6 +338,14 @@ class _MemberPageState extends State<MemberPage> {
   List<Widget> _actions(ColorScheme theme) => [
     if (_userController.reserves?.isNotEmpty ?? false)
       _reserveBtn(_userController.reserves!, theme),
+    IconButton(
+      tooltip: '订阅此 UP 的投稿',
+      icon: const Icon(Icons.playlist_add_check_circle_outlined),
+      onPressed: () => subscribeUpArchive(
+        mid: _mid,
+        name: _userController.username,
+      ),
+    ),
     IconButton(
       tooltip: '搜索',
       onPressed: () => Get.toNamed(

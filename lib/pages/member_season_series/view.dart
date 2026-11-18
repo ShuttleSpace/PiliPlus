@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/learning/learning_subscribe.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space_season_series/season.dart'
     show SpaceSsModel;
@@ -72,32 +73,49 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                   if (index == response.length - 1) {
                     _controller.onLoadMore();
                   }
-                  SpaceSsModel item = response[index];
-                  return SeasonSeriesCard(
-                    item: item,
-                    onTap: () {
-                      bool isSeason = item.meta!.seasonId != null;
-                      dynamic id = isSeason
-                          ? item.meta!.seasonId
-                          : item.meta!.seriesId;
-                      Get.to(
-                        SimpleScaffold(
-                          appBar: AppBar(title: Text(item.meta!.name!)),
-                          body: ViewSafeArea(
-                            child: MemberVideo(
-                              type: isSeason
-                                  ? ContributeType.season
-                                  : ContributeType.series,
-                              heroTag: widget.heroTag,
-                              mid: widget.mid,
-                              seasonId: isSeason ? id : null,
-                              seriesId: isSeason ? null : id,
-                              title: item.meta!.name,
+                  final item = response[index];
+                  final meta = item.meta;
+                  final seasonId = _asInt(meta?.seasonId);
+                  final seriesId = _asInt(meta?.seriesId);
+                  final isSeason = seasonId != null;
+                  return Stack(
+                    children: [
+                      SeasonSeriesCard(
+                        item: item,
+                        onTap: () => Get.to(
+                          SimpleScaffold(
+                            appBar: AppBar(title: Text(meta?.name ?? '')),
+                            body: ViewSafeArea(
+                              child: MemberVideo(
+                                type: isSeason
+                                    ? ContributeType.season
+                                    : ContributeType.series,
+                                heroTag: widget.heroTag,
+                                mid: widget.mid,
+                                seasonId: seasonId,
+                                seriesId: seriesId,
+                                title: meta?.name,
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: IconButton(
+                          tooltip: '订阅此合集',
+                          icon: const Icon(Icons.playlist_add_check_circle),
+                          color: Theme.of(context).colorScheme.primary,
+                          onPressed: () => subscribeCollection(
+                            mid: widget.mid,
+                            seasonId: seasonId,
+                            seriesId: seriesId,
+                            name: meta?.name,
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
                 itemCount: response.length,
@@ -109,4 +127,10 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
       ),
     };
   }
+}
+
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  return int.tryParse(value.toString());
 }
