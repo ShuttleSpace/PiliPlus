@@ -6,7 +6,6 @@ import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
 /// 只读取白名单接口：UP 投稿列表 / UP 自制合集列表。
@@ -75,22 +74,9 @@ class LearningRefresh {
                     cid: item.cid,
                     author: item.owner.name ?? '',
                     avatar: avatar ?? '',
-                    publishedAt: item.pubdate != null
-                        ? DateTime.fromMillisecondsSinceEpoch(
-                            item.pubdate! * 1000,
-                          )
-                        : item.season?.mtime is int
-                        ? DateTime.fromMillisecondsSinceEpoch(
-                            (item.season!.mtime as int) * 1000,
-                          )
-                        : null,
-                    publishedText: item.season?.mtime is int
-                        ? DateFormat('yyyy-MM-dd').format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                              (item.season!.mtime as int) * 1000,
-                            ),
-                          )
-                        : item.publishTimeText ?? '',
+                    publishedAt: _parseEpoch(
+                      item.pubdate ?? item.season?.mtime,
+                    ),
                   ),
                 )
                 .where((item) => item.bvid.isNotEmpty),
@@ -137,6 +123,14 @@ class LearningRefresh {
       items: items,
       baseline: baseline,
     );
+  }
+
+  /// 接口里 pubdate 是秒，mtime 有时是秒有时是毫秒，统一转成 DateTime。
+  static DateTime? _parseEpoch(dynamic value) {
+    final number = value is int ? value : int.tryParse(value?.toString() ?? '');
+    if (number == null) return null;
+    final ms = number > 100000000000 ? number : number * 1000;
+    return DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
   static RefreshOutcome _finish({

@@ -1,15 +1,11 @@
 import 'package:PiliPlus/learning/learning_list.dart';
-import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
-import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/add_to_list_sheet.dart';
+import 'package:PiliPlus/learning/widgets/open_learning_video.dart';
 import 'package:intl/intl.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 
 /// 订阅流卡片：沿用官方「动态」的头像 + 来源 + 时间 + 视频卡 + 操作行布局，
 /// 但数据源和动作全部是本地的，右上角用「本地」与官方动态区分。
@@ -90,11 +86,9 @@ class SubscriptionVideoCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      video.publishedText.isNotEmpty
-                          ? video.publishedText
-                          : DateFormat('yyyy-MM-dd HH:mm').format(
-                              video.publishedAt,
-                            ),
+                      DateFormat('yyyy-MM-dd HH:mm').format(
+                        video.publishedAt,
+                      ),
                       style: TextStyle(
                         fontSize: 11,
                         color: theme.colorScheme.outline,
@@ -140,20 +134,6 @@ class SubscriptionVideoCard extends StatelessWidget {
                       onTap: () =>
                           showAddToLearningListSheet(context, video: video),
                     ),
-                    const SizedBox(width: 20),
-                    Obx(() {
-                      final read = !LearningSources.instance.unreadBvids
-                          .contains(video.bvid);
-                      return _Action(
-                        icon: Icons.check_circle_outline,
-                        label: read ? '已看' : '标为已看',
-                        color: read ? theme.colorScheme.primary : null,
-                        onTap: () {
-                          LearningSources.instance.markVideoRead(video.bvid);
-                          SmartDialog.showToast('已标记为已看');
-                        },
-                      );
-                    }),
                   ],
                 ),
               ],
@@ -175,27 +155,7 @@ class _VideoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GestureDetector(
-      onTap: () {
-        LearningSources.instance.markVideoRead(video.bvid);
-        if (video.cid == null) {
-          SmartDialog.showToast('缺少分 P 信息');
-          return;
-        }
-        PageUtils.toVideoPage(
-          bvid: video.bvid,
-          cid: video.cid!,
-          cover: video.cover,
-          title: video.title,
-          progress:
-              LearningProgress.instance
-                  .get(
-                    bvid: video.bvid,
-                    cid: video.cid!,
-                  )
-                  ?.positionMs ??
-              0,
-        );
-      },
+      onTap: () => openLearningVideo(context, video),
       child: Container(
         padding: const EdgeInsets.all(7),
         decoration: BoxDecoration(
@@ -284,18 +244,16 @@ class _Action extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.color,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effective = color ?? theme.colorScheme.outline;
+    final effective = theme.colorScheme.outline;
     return InkWell(
       onTap: onTap,
       child: Row(

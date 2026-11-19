@@ -18,6 +18,13 @@ List<SettingsModel> get recommendSettings => [
     leading: const Icon(Icons.home_outlined),
     onTap: (_, _) => Get.toNamed('/home'),
   ),
+  const SwitchModel(
+    title: '合集播放前询问恢复进度',
+    subtitle: '开启后每次进入询问是否从上次分 P 继续',
+    leading: Icon(Icons.restore_outlined),
+    setKey: SettingBoxKey.learningResumePrompt,
+    defaultVal: false,
+  ),
   NormalModel(
     title: '动态',
     leading: const Icon(Icons.dynamic_feed_outlined),

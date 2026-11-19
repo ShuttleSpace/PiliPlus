@@ -33,6 +33,29 @@ void main() {
     expect(progress.get(bvid: 'BV1', cid: 123)?.completed, isTrue);
   });
 
+  test('同一 bvid 取最近一次观看的分P用于合集续播', () {
+    progress
+      ..record(
+        bvid: 'BVseries',
+        cid: 1,
+        title: 'P1',
+        cover: '',
+        positionMs: 100,
+        durationMs: 1000,
+      )
+      ..record(
+        bvid: 'BVseries',
+        cid: 3,
+        title: 'P3',
+        cover: '',
+        positionMs: 250,
+        durationMs: 1000,
+      );
+    final last = progress.latestForBvid('BVseries');
+    expect(last?.cid, 3);
+    expect(last?.title, 'P3');
+  });
+
   test('同一视频不同分P分别记录，统计与备份可还原', () {
     progress
       ..record(

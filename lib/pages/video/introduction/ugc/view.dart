@@ -579,7 +579,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ),
                   );
                 },
-                semanticsLabel: '加入学习清单',
+                semanticsLabel: '加入待阅清单',
                 text: '清单',
               );
             },

@@ -85,34 +85,34 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
   Future<void> _refresh({bool baseline = false, int? onlyMid}) async {
     if (_refreshing) return;
     _refreshing = true;
-    final targets = _currentSources
-        .where((s) => onlyMid == null || s.mid == onlyMid)
-        .toList();
-    if (targets.isEmpty) {
-      SmartDialog.showToast('还没有订阅源');
+    try {
+      final targets = _currentSources
+          .where((s) => onlyMid == null || s.mid == onlyMid)
+          .toList();
+      if (targets.isEmpty) {
+        SmartDialog.showToast('还没有订阅源');
+        return;
+      }
+      var added = 0;
+      for (final source in targets) {
+        final outcome = await LearningRefresh.refresh(
+          source: source,
+          library: LearningLibrary.instance,
+          baseline: baseline,
+        );
+        LearningSources.instance.recordRefresh(
+          id: source.id,
+          seenBvids: outcome.seenBvids,
+          newBvids: outcome.newBvids,
+          error: outcome.error,
+        );
+        added += outcome.added;
+      }
+      SmartDialog.showToast(added > 0 ? '新增 $added 个视频' : '暂无更新');
+    } catch (e) {
+      SmartDialog.showToast('刷新失败: $e');
+    } finally {
       _refreshing = false;
-      return;
-    }
-    var added = 0;
-    for (final source in targets) {
-      final outcome = await LearningRefresh.refresh(
-        source: source,
-        library: LearningLibrary.instance,
-        baseline: baseline,
-      );
-      LearningSources.instance.recordRefresh(
-        id: source.id,
-        seenBvids: outcome.seenBvids,
-        newBvids: outcome.newBvids,
-        error: outcome.error,
-      );
-      added += outcome.added;
-    }
-    _refreshing = false;
-    if (added > 0) {
-      SmartDialog.showToast('新增 $added 个视频');
-    } else {
-      SmartDialog.showToast('暂无更新');
     }
   }
 

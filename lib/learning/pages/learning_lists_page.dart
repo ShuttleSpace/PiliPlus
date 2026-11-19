@@ -64,7 +64,7 @@ class LearningListsView extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    '我的学习清单',
+                    '我的待阅清单',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const Spacer(),

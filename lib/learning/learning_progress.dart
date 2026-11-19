@@ -31,6 +31,18 @@ class LearningProgress {
     records.refresh();
   }
 
+  /// 同一 bvid（合集多 P）最近一次观看记录，用于从清单进入时定位分 P。
+  LearningWatchRecord? latestForBvid(String bvid) {
+    LearningWatchRecord? latest;
+    for (final record in records) {
+      if (record.bvid != bvid) continue;
+      if (latest == null || record.lastPlayedAt.isAfter(latest.lastPlayedAt)) {
+        latest = record;
+      }
+    }
+    return latest;
+  }
+
   LearningWatchRecord? get({required String bvid, required int cid}) {
     final key = '$bvid:$cid';
     for (final record in records) {

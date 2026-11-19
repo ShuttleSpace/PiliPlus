@@ -31,7 +31,7 @@ void showAddToLearningListSheet(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: .stretch,
             children: [
-              Text('加入学习清单', style: theme.textTheme.titleMedium),
+              Text('加入待阅清单', style: theme.textTheme.titleMedium),
               const SizedBox(height: 12),
               Obx(() {
                 if (library.lists.isEmpty) {

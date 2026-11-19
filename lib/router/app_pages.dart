@@ -98,7 +98,7 @@ class Routes {
     GetPage(name: '/favDetail', page: () => const FavDetailPage()),
     // 稍后再看
     GetPage(name: '/later', page: () => const LaterPage()),
-    // 本地学习清单（自主订阅客户端）
+    // 本地待阅清单（自主订阅客户端）
     GetPage(name: '/learningLists', page: () => const LearningListsPage()),
     GetPage(name: '/learningSources', page: () => const LearningSourcesPage()),
     GetPage(

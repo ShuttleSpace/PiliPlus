@@ -7,7 +7,7 @@ import 'package:hive_ce/hive.dart';
 
 enum AddVideoResult { added, duplicate, missingList }
 
-/// 本地学习清单的唯一事实源。
+/// 本地待阅清单的唯一事实源。
 /// 所有页面（播放页、搜索结果、清单页）都读这里的 Rx 状态。
 class LearningLibrary {
   LearningLibrary._();
@@ -28,7 +28,7 @@ class LearningLibrary {
       loadFromJson(stored);
     } else {
       loadFromJson(const <dynamic>[]);
-      createList('学习清单');
+      createList('待阅清单');
     }
   }
 
@@ -98,6 +98,7 @@ class LearningLibrary {
     required String listId,
     required LearningVideo video,
     bool updateExisting = false,
+    bool persist = true,
   }) {
     final list = find(listId);
     if (list == null) return AddVideoResult.missingList;
@@ -106,13 +107,13 @@ class LearningLibrary {
       if (!updateExisting) return AddVideoResult.duplicate;
       list.videos[index] = video;
       list.updatedAt = DateTime.now();
-      _persist();
+      if (persist) _persist();
       return AddVideoResult.added;
     }
 
     list.videos.add(video);
     list.updatedAt = DateTime.now();
-    _persist();
+    if (persist) _persist();
     return AddVideoResult.added;
   }
 
@@ -200,6 +201,9 @@ class LearningLibrary {
       rawProgress is List ? rawProgress : const <dynamic>[],
     );
   }
+
+  /// 批量刷新结束时统一落盘，避免每条视频都同步写 Hive 卡 UI。
+  void persistNow() => _persist();
 
   void _persist() {
     _box?.put(_listsKey, exportJson());

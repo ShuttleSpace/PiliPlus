@@ -52,7 +52,7 @@ abstract final class GStorage {
       ).then((res) => localCache = res),
       // 设置
       Hive.openBox('setting').then((res) => setting = res),
-      // 本地学习清单（自主订阅客户端）
+      // 本地待阅清单（自主订阅客户端）
       Hive.openBox('learningLists').then((res) {
         learningLists = res;
         LearningLibrary.instance.attach(res);

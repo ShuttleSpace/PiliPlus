@@ -1,9 +1,7 @@
 import 'package:PiliPlus/learning/learning_progress.dart';
+import 'package:PiliPlus/learning/widgets/open_learning_video.dart';
 import 'package:PiliPlus/learning/learning_list.dart';
-import 'package:PiliPlus/learning/learning_sources.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 /// 与搜索结果一致的横向视频卡片：封面 + 时长 + 标题 + UP + 本地进度。
 class LearningVideoCard extends StatelessWidget {
@@ -27,21 +25,7 @@ class LearningVideoCard extends StatelessWidget {
     );
     final played = progress?.positionMs ?? 0;
     return InkWell(
-      onTap: () {
-        LearningSources.instance.markVideoRead(video.bvid);
-        onPlayed?.call();
-        if (video.cid == null) {
-          SmartDialog.showToast('缺少分 P 信息');
-          return;
-        }
-        PageUtils.toVideoPage(
-          bvid: video.bvid,
-          cid: video.cid!,
-          cover: video.cover,
-          title: video.title,
-          progress: progress?.completed == true ? 0 : played,
-        );
-      },
+      onTap: () => openLearningVideo(context, video, onPlayed: onPlayed),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Row(

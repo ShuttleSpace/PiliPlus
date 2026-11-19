@@ -62,9 +62,11 @@ RefreshOutcome applyRefreshItems({
         publishedText: item.publishedText,
       ),
       updateExisting: true,
+      persist: false,
     );
     if (isNew && result == AddVideoResult.added) addedBvids.add(item.bvid);
   }
 
+  library.persistNow();
   return RefreshOutcome(addedBvids.length, seen.toList(), addedBvids);
 }
