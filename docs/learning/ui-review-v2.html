@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>自主订阅学习客户端 · UI 设计稿 v2</title>
+<style>
+  :root{
+    --pink:#fb7299; --pink-soft:#ffe8ef; --ink:#18191c; --sub:#61666d;
+    --line:#e7e9eb; --bg:#f6f7f9; --card:#fff; --blue:#00aeec;
+    --red:#f25d8e; --green:#2bb673;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef0f3;color:var(--ink);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  header{padding:28px 32px 8px}
+  header h1{margin:0;font-size:24px}
+  header p{margin:6px 0 0;color:var(--sub);max-width:1000px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 32px 4px;color:var(--sub);font-size:13px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .board{display:flex;flex-wrap:wrap;gap:28px;padding:22px 32px 60px;align-items:flex-start}
+  .item{width:412px}
+  .item h2{font-size:15px;margin:0 0 8px;padding-left:4px}
+  .item h2 small{color:var(--sub);font-weight:400;font-size:12px;margin-left:6px}
+  .phone{width:390px;height:820px;background:var(--bg);border:9px solid #1d1d1f;
+         border-radius:42px;overflow:hidden;position:relative;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+  .status{height:26px;display:flex;align-items:center;justify-content:space-between;
+          padding:0 20px;font-size:11px;color:#fff;background:var(--pink)}
+  .appbar{height:48px;background:#fff;display:flex;align-items:center;gap:10px;
+          padding:0 14px;border-bottom:1px solid var(--line)}
+  .appbar .title{font-size:16px;font-weight:600;flex:1}
+  .icon{width:24px;height:24px;border-radius:6px;background:#f1f2f4;color:var(--sub);
+        display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+  .icon.pink{background:var(--pink-soft);color:var(--pink);font-size:11px;padding:0 6px;width:auto}
+  .scroll{height:calc(100% - 26px - 48px - 62px);overflow:hidden}
+  .nav{position:absolute;left:0;right:0;bottom:0;height:62px;background:#fff;
+       border-top:1px solid var(--line);display:flex}
+  .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+         gap:2px;color:var(--sub);font-size:11px;position:relative}
+  .nav a.on{color:var(--pink)}
+  .nav a .glyph{font-size:20px;line-height:1}
+  .nav .dot{position:absolute;top:5px;left:calc(50% + 8px);background:var(--red);color:#fff;
+            border-radius:9px;padding:0 5px;font-size:10px;line-height:16px;min-width:16px;text-align:center}
+  .tabs{display:flex;gap:16px;padding:9px 14px;background:#fff;overflow:hidden;white-space:nowrap}
+  .tabs.primary{border-bottom:1px solid var(--line);gap:30px;padding:11px 20px}
+  .tabs.secondary{border-bottom:1px solid var(--line);gap:16px}
+  .tab{padding:4px 2px;color:var(--sub);font-size:14px;position:relative;flex:none}
+  .tabs.primary .tab{font-size:16px}
+  .tab.on{color:var(--ink);font-weight:600}
+  .tab.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;
+                background:var(--pink);border-radius:3px}
+  .tab .n{background:var(--pink-soft);color:var(--pink);border-radius:9px;padding:1px 6px;
+          font-size:11px;margin-left:3px}
+  .section{padding:12px 14px 4px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+  .section small{font-weight:400;color:var(--sub);font-size:12px}
+  .section .more{margin-left:auto;color:var(--blue);font-size:12px;font-weight:400}
+  .vcard{display:flex;gap:10px;padding:9px 14px;background:#fff;border-bottom:1px solid #f0f1f3}
+  .thumb{width:140px;height:88px;border-radius:8px;flex:none;position:relative;overflow:hidden;
+         display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;
+         text-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .t1{background:linear-gradient(135deg,#667eea,#764ba2)}
+  .t2{background:linear-gradient(135deg,#f7971e,#ffd200)}
+  .t3{background:linear-gradient(135deg,#11998e,#38ef7d)}
+  .t4{background:linear-gradient(135deg,#ee0979,#ff6a00)}
+  .t5{background:linear-gradient(135deg,#36d1dc,#5b86e5)}
+  .dur{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,.65);
+       border-radius:3px;padding:1px 4px;font-size:10px}
+  .new{position:absolute;left:5px;top:5px;background:var(--red);border-radius:3px;
+       padding:1px 5px;font-size:10px;text-shadow:none}
+  .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--pink)}
+  .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .meta .ttl{font-size:13px;line-height:1.35;max-height:36px;overflow:hidden}
+  .meta .up{font-size:11px;color:var(--sub)}
+  .meta .row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub)}
+  .tag{background:var(--pink-soft);color:var(--pink);border-radius:4px;padding:1px 5px;font-size:10px}
+  .tag.gray{background:#f1f2f4;color:var(--sub)}
+  .listcard{background:#fff;margin:10px 14px;border-radius:12px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .listcard h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px}
+  .listcard h3 span{font-size:11px;color:var(--sub);font-weight:400}
+  .mosaic{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .mosaic div{height:58px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+              color:#fff;font-size:10px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .src{display:flex;gap:10px;align-items:center;padding:12px 14px;background:#fff;border-bottom:1px solid #f0f1f3}
+  .ava{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#fb7299,#ffb3c8);
+       color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+  .src .info{flex:1;min-width:0}
+  .src .info b{font-size:13px}
+  .src .info p{margin:2px 0 0;font-size:11px;color:var(--sub)}
+  .cnt{background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px}
+  .cnt.zero{background:#f1f2f4;color:var(--sub)}
+  .chev{color:#c4c7cc}
+  .settings{background:#fff}
+  .srow{padding:13px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  .srow .sicon{width:32px;height:32px;border-radius:8px;background:var(--pink-soft);color:var(--pink);
+               display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+  .srow .sinfo{flex:1}
+  .srow .sinfo b{font-size:14px}
+  .srow .sinfo p{margin:2px 0 0;font-size:11px;color:var(--sub)}
+  .switch{width:38px;height:22px;border-radius:12px;background:#d8dadd;position:relative;flex:none}
+  .switch:after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+                border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .hint{font-size:12px;color:var(--sub);padding:10px 14px;background:#fff8fb;border-bottom:1px solid var(--line)}
+  .profile{background:linear-gradient(135deg,#fb7299,#ffb3c8);color:#fff;padding:18px 16px;
+           display:flex;align-items:center;gap:12px}
+  .profile .ava{background:rgba(255,255,255,.25);width:52px;height:52px;font-size:18px}
+  .profile b{font-size:16px}
+  .profile p{margin:2px 0 0;font-size:11px;opacity:.9}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px;background:#fff}
+  .grid div{text-align:center;font-size:11px;color:var(--sub)}
+  .grid div span{display:block;font-size:20px;color:var(--pink);margin-bottom:4px}
+  .annotation{margin-top:10px;padding:10px 12px;background:#fff;border-left:3px solid var(--pink);
+              border-radius:0 8px 8px 0;font-size:12px;color:#444}
+  .annotation b{color:var(--pink)}
+  footer{padding:10px 32px 50px;color:var(--sub);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>自主订阅学习客户端 · UI 设计稿 v2（层级修正）</h1>
+  <p><b>底部导航只有「首页 / 我的」</b>；首页顶部是「清单 / 订阅」两个 tab；订阅更新与分组都在订阅 tab 内；原首页算法推荐页与动态页移到「我的 → 设置 → 推荐流设置」。</p>
+</header>
+<div class="legend">
+  <span><i style="background:var(--pink)"></i>当前 tab / 主操作</span>
+  <span><i style="background:var(--red)"></i>新视频 badge</span>
+  <span><i style="background:var(--blue)"></i>跳转链接</span>
+  <span><i style="background:var(--green)"></i>本地状态</span>
+</div>
+
+<div class="board">
+
+  <!-- 1 首页/清单 -->
+  <div class="item">
+    <h2>① 首页 · 清单 tab<small>首页顶部 tab 之一</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="title">首页</div><div class="icon">⌕</div><div class="icon">⋯</div></div>
+      <div class="scroll">
+        <div class="tabs primary"><div class="tab on">清单</div><div class="tab">订阅<span class="n">3</span></div></div>
+        <div class="tabs secondary"><div class="tab on">全部</div><div class="tab">机器学习</div><div class="tab">考证</div><div class="tab">+</div></div>
+        <div class="listcard">
+          <h3>机器学习 <span>12 个视频 · 3 未看</span></h3>
+          <div class="mosaic">
+            <div class="t1">Transformer 精讲</div><div class="t3">Rust 异步</div><div class="t5">线性代数</div>
+          </div>
+        </div>
+        <div class="listcard">
+          <h3>考证 <span>5 个视频 · 1 未看</span></h3>
+          <div class="mosaic">
+            <div class="t2">真题解析</div><div class="t4">高频考点</div><div class="t1">错题复盘</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>底部「首页」进入，顶部默认「清单」；二级 chip 切换具体清单；点清单卡片进详情。badge 挂在底部「首页」上，表示订阅有新内容。</div>
+  </div>
+
+  <!-- 2 清单详情 -->
+  <div class="item">
+    <h2>② 清单详情<small>搜索同款视频卡片</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="icon">‹</div><div class="title">机器学习</div><div class="icon">⋯</div></div>
+      <div class="scroll">
+        <div class="hint">本地清单 · 不写入 B 站收藏夹</div>
+        <div class="vcard">
+          <div class="thumb t1">封面<small class="dur">42:10</small><div class="bar" style="width:32%"></div></div>
+          <div class="meta"><div class="ttl">从零实现一个 Transformer：注意力机制篇</div>
+            <div class="up">UP · 深度学习研究所 · 昨天</div>
+            <div class="row"><span class="tag">已加入</span><span>13:28 / 42:10</span></div></div>
+        </div>
+        <div class="vcard">
+          <div class="thumb t3">封面<small class="dur">18:05</small></div>
+          <div class="meta"><div class="ttl">Rust 异步运行时源码走读</div>
+            <div class="up">UP · SystemNotify · 3 天前</div>
+            <div class="row"><span class="tag gray">未看</span></div></div>
+        </div>
+        <div class="vcard">
+          <div class="thumb t5">封面<small class="dur">1:02:31</small></div>
+          <div class="meta"><div class="ttl">线性代数本质：从向量空间到特征值</div>
+            <div class="up">UP · 数学茶馆 · 5 天前</div>
+            <div class="row"><span class="tag">已看完</span></div></div>
+        </div>
+        <div class="section">管理 <small>长按排序 / 移出 / 跨清单移动</small></div>
+      </div>
+      <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>封面、时长、UP、进度条全部沿用搜索卡片；点视频播放，自动恢复本地进度。</div>
+  </div>
+
+  <!-- 3 订阅-更新 -->
+  <div class="item">
+    <h2>③ 首页 · 订阅 tab · 更新页<small>默认落地在订阅 tab 内</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="title">首页</div><div class="icon">＋</div><div class="icon">↻</div></div>
+      <div class="scroll">
+        <div class="tabs primary"><div class="tab">清单</div><div class="tab on">订阅<span class="n">3</span></div></div>
+        <div class="tabs secondary"><div class="tab on">更新<span class="n">3</span></div><div class="tab">全部</div><div class="tab">课程<span class="n">2</span></div><div class="tab">技术</div><div class="tab">+</div></div>
+        <div class="hint">刷新完成 · 新增 3 个视频，已按 UP 分组</div>
+        <div class="section">深度学习研究所 <small>2 条新视频</small><span class="more">查看该 UP 全部 ›</span></div>
+        <div class="vcard">
+          <div class="thumb t1">封面<small class="new">NEW</small><small class="dur">42:10</small></div>
+          <div class="meta"><div class="ttl">从零实现一个 Transformer：注意力机制篇</div>
+            <div class="up">UP · 深度学习研究所 · 昨天</div>
+            <div class="row"><span class="tag">课程</span><span>未看</span></div></div>
+        </div>
+        <div class="vcard">
+          <div class="thumb t5">封面<small class="new">NEW</small><small class="dur">26:44</small></div>
+          <div class="meta"><div class="ttl">反向传播的手工推导与实现</div>
+            <div class="up">UP · 深度学习研究所 · 昨天</div>
+            <div class="row"><span class="tag">课程</span></div></div>
+        </div>
+        <div class="section">SystemNotify <small>1 条新视频</small><span class="more">查看该 UP 全部 ›</span></div>
+        <div class="vcard">
+          <div class="thumb t3">封面<small class="new">NEW</small><small class="dur">18:05</small></div>
+          <div class="meta"><div class="ttl">Rust 异步运行时源码走读</div>
+            <div class="up">UP · SystemNotify · 今天</div>
+            <div class="row"><span class="tag">技术</span></div></div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>订阅 tab 内二级横向滑动（更新/全部/各分组），每个二级 tab 独立手动刷新；新视频按 bvid 去重、按 UP 分组；点「查看该 UP 全部」跳 UP 投稿列表。</div>
+  </div>
+
+  <!-- 4 订阅-分组 -->
+  <div class="item">
+    <h2>④ 首页 · 订阅 tab · 分组页<small>订阅源管理</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="title">首页</div><div class="icon">⚙</div><div class="icon">↻</div></div>
+      <div class="scroll">
+        <div class="tabs primary"><div class="tab">清单</div><div class="tab on">订阅<span class="n">3</span></div></div>
+        <div class="tabs secondary"><div class="tab">更新<span class="n">3</span></div><div class="tab">全部</div><div class="tab on">课程<span class="n">2</span></div><div class="tab">技术</div><div class="tab">+</div></div>
+        <div class="hint">分组「课程」· 3 个订阅源 · 拖动排序 / 长按移组</div>
+        <div class="src">
+          <div class="ava">深度</div><div class="info"><b>深度学习研究所</b><p>UP 投稿 · 上次刷新 10:32</p></div>
+          <span class="cnt">2</span><span class="chev">›</span>
+        </div>
+        <div class="src">
+          <div class="ava">线代</div><div class="info"><b>线性代数合集</b><p>视频合集 · season 88123</p></div>
+          <span class="cnt zero">0</span><span class="chev">›</span>
+        </div>
+        <div class="src">
+          <div class="ava">数学</div><div class="info"><b>数学茶馆</b><p>UP 投稿 · 上次刷新 09:10</p></div>
+          <span class="cnt zero">0</span><span class="chev">›</span>
+        </div>
+        <div class="section">分组管理 <small>新建 / 重命名 / 删除</small></div>
+      </div>
+      <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>点订阅项 <b>直接跳到该 UP 上传的视频列表</b>；数字 badge = 上次刷新后的新视频数；「+」新建分组或订阅源。</div>
+  </div>
+
+  <!-- 5 UP 视频列表 -->
+  <div class="item">
+    <h2>⑤ UP 投稿列表<small>由订阅项点击跳转 · 只读</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="icon">‹</div><div class="title">深度学习研究所</div><div class="icon pink">✓ 已订阅</div></div>
+      <div class="scroll">
+        <div class="hint">只读投稿列表 · 不写回 B 站关注状态</div>
+        <div class="vcard">
+          <div class="thumb t1">封面<small class="new">NEW</small><small class="dur">42:10</small></div>
+          <div class="meta"><div class="ttl">从零实现一个 Transformer：注意力机制篇</div>
+            <div class="up">昨天</div><div class="row"><span class="tag gray">可加入清单</span></div></div>
+        </div>
+        <div class="vcard">
+          <div class="thumb t5">封面<small class="dur">26:44</small></div>
+          <div class="meta"><div class="ttl">反向传播的手工推导与实现</div><div class="up">昨天</div></div>
+        </div>
+        <div class="vcard">
+          <div class="thumb t3">封面<small class="dur">18:05</small></div>
+          <div class="meta"><div class="ttl">Rust 异步运行时源码走读</div><div class="up">3 天前</div></div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>点视频进播放页，播放页「加入清单」写入本地；返回后列表项显示「已加入清单」，与搜索结果一致。</div>
+  </div>
+
+  <!-- 6 我的 tab -->
+  <div class="item">
+    <h2>⑥ 我的 tab<small>底部 tab 之二 · 设置入口</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="title">我的</div><div class="icon">⚙</div></div>
+      <div class="scroll">
+        <div class="profile"><div class="ava">学</div><div><b>自主学习者</b><p>本地数据 · 未登录也可使用</p></div></div>
+        <div class="grid">
+          <div><span>▤</span>学习清单</div><div><span>☆</span>我的订阅</div>
+          <div><span>◷</span>观看统计</div><div><span>↥</span>备份迁移</div>
+        </div>
+        <div class="settings">
+          <div class="srow"><div class="sicon">⚙</div><div class="sinfo"><b>设置</b><p>推荐流设置、播放设置、账号</p></div><span class="chev">›</span></div>
+          <div class="srow"><div class="sicon">◐</div><div class="sinfo"><b>推荐流设置</b><p>首页（算法）、动态、热门入口</p></div><span class="chev">›</span></div>
+        </div>
+      </div>
+      <div class="nav"><a><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a class="on"><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>底部第二个 tab；官方首页/动态不在这里直接出现，统一从「推荐流设置」进入。</div>
+  </div>
+
+  <!-- 7 推荐流设置 -->
+  <div class="item">
+    <h2>⑦ 设置 → 推荐流设置<small>原首页与动态的收容地</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="appbar"><div class="icon">‹</div><div class="title">推荐流设置</div><div class="icon">⌕</div></div>
+      <div class="scroll">
+        <div class="hint">以下都是官方入口，默认不出现在底部导航与首页 tab</div>
+        <div class="settings">
+          <div class="srow"><div class="sicon">⌂</div><div class="sinfo"><b>首页（算法推荐）</b><p>原首页 · 手动进入</p></div><span class="chev">进入 ›</span></div>
+          <div class="srow"><div class="sicon">◎</div><div class="sinfo"><b>动态</b><p>关注动态流 · 手动进入</p></div><span class="chev">进入 ›</span></div>
+          <div class="srow"><div class="sicon">♨</div><div class="sinfo"><b>热门 / 分区 / 番剧</b><p>官方发现页</p></div><span class="chev">进入 ›</span></div>
+        </div>
+        <div class="section">干扰控制 <small>默认关闭</small></div>
+        <div class="settings">
+          <div class="srow"><div class="sicon">◐</div><div class="sinfo"><b>播放页相关推荐</b><p>看完视频不自动跳走</p></div><div class="switch"></div></div>
+          <div class="srow"><div class="sicon">↻</div><div class="sinfo"><b>自动连播</b><p>避免算法接管观看顺序</p></div><div class="switch"></div></div>
+        </div>
+      </div>
+      <div class="nav"><a><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a class="on"><span class="glyph">☺</span>我的</a></div>
+    </div>
+    <div class="annotation"><b>交互：</b>从「我的 → 设置 → 推荐流设置」进入；这里只做官方入口收纳，不向首页/订阅注入任何算法内容。</div>
+  </div>
+
+</div>
+
+<footer>
+  层级总结：<b>底部</b> = 首页 / 我的；<b>首页顶部</b> = 清单 / 订阅；<b>订阅内部</b> = 更新 / 全部 / 各分组（横向滑动、独立刷新）；<b>设置 → 推荐流设置</b> = 原首页、动态、热门等官方入口。所有视频列表统一使用搜索同款卡片。
+</footer>
+</body>
+</html>
