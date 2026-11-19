@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>订阅流 UI 预览 · 本地动态</title>
+<style>
+  :root{--pink:#fb7299;--soft:#ffe8ef;--ink:#18191c;--sub:#8a8f99;--line:#eceef1;--bg:#f6f7f9;--blue:#00aeec;--red:#f25d8e}
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef0f3;color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  header{padding:26px 30px 6px}
+  h1{margin:0;font-size:23px}
+  header p{margin:6px 0 0;color:#61666d}
+  .board{display:flex;flex-wrap:wrap;gap:26px;padding:22px 30px 60px;align-items:flex-start}
+  .item{width:402px}
+  .item h2{font-size:15px;margin:0 0 8px;padding-left:3px}
+  .item h2 small{font-weight:400;color:#8a8f99;font-size:12px;margin-left:6px}
+  .phone{width:380px;height:810px;border:9px solid #1d1d1f;border-radius:42px;overflow:hidden;position:relative;background:var(--bg);box-shadow:0 10px 26px rgba(0,0,0,.15)}
+  .status{height:26px;background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px}
+  .top{height:48px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line)}
+  .top .title{font-size:16px;font-weight:600;flex:1}
+  .ico{width:24px;height:24px;border-radius:6px;background:#f2f3f5;color:#61666d;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+  .ico.hot{background:var(--soft);color:var(--pink);width:auto;padding:0 7px;font-size:11px}
+  .scroll{height:calc(100% - 26px - 48px - 60px);overflow:hidden}
+  .nav{position:absolute;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:flex}
+  .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#8a8f99;gap:2px}
+  .nav a.on{color:var(--pink)}
+  .nav .g{font-size:19px;line-height:1}
+  .nav .dot{position:absolute;top:5px;left:calc(50% + 8px);background:var(--red);color:#fff;border-radius:9px;padding:0 5px;font-size:10px;line-height:16px}
+  .tabs{display:flex;align-items:center;gap:18px;padding:9px 14px;background:#fff;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden}
+  .tab{font-size:14px;color:#61666d;position:relative;padding:4px 0;flex:none}
+  .tab.on{color:var(--ink);font-weight:600}
+  .tab.on:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:3px;background:var(--pink);border-radius:3px}
+  .tab .n{background:var(--soft);color:var(--pink);border-radius:9px;padding:1px 5px;font-size:10px;margin-left:3px}
+  .pull{height:26px;display:flex;align-items:center;justify-content:center;color:#a6abb4;font-size:11px;background:var(--bg)}
+  .dyn{display:flex;gap:10px;padding:12px 14px;background:#fff;border-bottom:8px solid var(--bg)}
+  .ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#fb7299,#ffc0d2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+  .ava.g{background:linear-gradient(135deg,#00aeec,#8be0ff)}
+  .body{flex:1;min-width:0}
+  .head{display:flex;align-items:center;gap:6px}
+  .head b{font-size:13px}
+  .head span{font-size:11px;color:var(--sub)}
+  .pill{font-size:10px;border:1px solid var(--pink);color:var(--pink);border-radius:3px;padding:0 4px}
+  .pill.blue{border-color:var(--blue);color:var(--blue)}
+  .text{margin:5px 0 7px;font-size:13px;line-height:1.4}
+  .vcard{display:flex;gap:9px;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fafbfc}
+  .thumb{width:112px;height:70px;border-radius:6px;position:relative;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;text-shadow:0 1px 3px #000;overflow:hidden}
+  .t1{background:linear-gradient(135deg,#f7971e,#ffd200)}
+  .t2{background:linear-gradient(135deg,#36d1dc,#5b86e5)}
+  .t3{background:linear-gradient(135deg,#ee0979,#ff6a00)}
+  .new{position:absolute;top:4px;left:4px;background:var(--red);color:#fff;font-size:10px;border-radius:3px;padding:1px 5px;text-shadow:none}
+  .vm{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .vm .t{font-size:12px;line-height:1.35;max-height:33px;overflow:hidden}
+  .vm .u{font-size:10px;color:var(--sub)}
+  .acts{display:flex;gap:24px;margin-top:9px;color:#8a8f99;font-size:11px}
+  .acts b{font-weight:400;color:var(--pink)}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;padding:12px 16px 26px;box-shadow:0 -8px 24px rgba(0,0,0,.12)}
+  .sheet h3{margin:2px 0 10px;font-size:15px}
+  .sheet .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .sheet .row .info{flex:1}
+  .sheet .row b{font-size:13px}
+  .sheet .row p{margin:2px 0 0;font-size:11px;color:var(--sub)}
+  .n{background:var(--red);color:#fff;border-radius:9px;padding:1px 6px;font-size:10px}
+  .annotation{margin-top:9px;font-size:12px;color:#555;background:#fff;border-left:3px solid var(--pink);padding:8px 10px;border-radius:0 7px 7px 0}
+  footer{padding:0 30px 50px;color:#8a8f99;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>订阅流 UI 预览 · 本地动态</h1>
+  <p>视觉语言与官方动态一致：头像 + 来源 + 时间 + 视频卡 + 操作行。区别只在右上角「本地」标记与数据来源。</p>
+</header>
+<div class="board">
+
+  <!-- 1 全部时间线 -->
+  <div class="item">
+    <h2>① 订阅 · 全部<small>按更新时间线排列</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="top">
+        <div class="title">首页</div><div class="ico">⌕</div>
+      </div>
+      <div class="scroll">
+        <div class="tabs"><div class="tab on">全部<span class="n">5</span></div><div class="tab">小满写隶书</div><div class="tab">隶书合集</div><div class="ico">＋</div><div class="ico">⚙</div></div>
+        <div class="pull">↓ 下拉刷新</div>
+        <div class="dyn">
+          <div class="ava">满</div>
+          <div class="body">
+            <div class="head"><b>小满写隶书</b><span>昨天 20:14</span><span class="pill">本地</span></div>
+            <div class="text">新投稿</div>
+            <div class="vcard">
+              <div class="thumb t1">封面<span class="new">NEW</span></div>
+              <div class="vm"><div class="t">四季平安 · 隶书入门第十七讲</div><div class="u">42:10 · 6.6万播放</div></div>
+            </div>
+            <div class="acts"><span>↥ 加入清单</span><span>✓ 已看</span><span>⋯</span></div>
+          </div>
+        </div>
+        <div class="dyn">
+          <div class="ava g">集</div>
+          <div class="body">
+            <div class="head"><b>隶书合集</b><span>昨天 18:02</span><span class="pill">本地</span></div>
+            <div class="text">合集新增</div>
+            <div class="vcard">
+              <div class="thumb t2">封面<span class="new">NEW</span></div>
+              <div class="vm"><div class="t">曹全碑通临：结构与笔意</div><div class="u">26:44 · 合集 12/20</div></div>
+            </div>
+            <div class="acts"><span>↥ 加入清单</span><span>✓ 已看</span><span>⋯</span></div>
+          </div>
+        </div>
+        <div class="dyn">
+          <div class="ava">满</div>
+          <div class="body">
+            <div class="head"><b>小满写隶书</b><span>前天 21:30</span><span class="pill">本地</span></div>
+            <div class="text">新投稿</div>
+            <div class="vcard">
+              <div class="thumb t3">封面</div>
+              <div class="vm"><div class="t">三阳开泰 · 隶书写法拆解</div><div class="u">18:05 · 已加入清单</div></div>
+            </div>
+            <div class="acts"><b>✓ 已加入</b><span>✓ 已看</span><span>⋯</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="g">⌂</span>首页<span class="dot">5</span></a><a><span class="g">☺</span>我的</a></div>
+    </div>
+    <div class="annotation">全部 = 所有订阅源的更新，按时间倒序；「本地」标记区别于官方动态。</div>
+  </div>
+
+  <!-- 2 单个 UP -->
+  <div class="item">
+    <h2>② 订阅 · 单个 UP<small>与动态个人流一致</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="top"><div class="title">首页</div><div class="ico">⌕</div></div>
+      <div class="scroll">
+        <div class="tabs"><div class="tab">全部</div><div class="tab on">小满写隶书<span class="n">3</span></div><div class="tab">隶书合集</div><div class="ico">＋</div><div class="ico">⚙</div></div>
+        <div class="dyn" style="border-bottom:1px solid var(--line)">
+          <div class="ava">满</div>
+          <div class="body">
+            <div class="head"><b>小满写隶书</b><span class="pill">本地订阅</span></div>
+            <div class="text">查看该 UP 全部投稿 ›</div>
+          </div>
+        </div>
+        <div class="dyn">
+          <div class="ava">满</div>
+          <div class="body">
+            <div class="head"><b>小满写隶书</b><span>昨天 20:14</span><span class="pill">本地</span></div>
+            <div class="text">新投稿</div>
+            <div class="vcard">
+              <div class="thumb t1">封面<span class="new">NEW</span></div>
+              <div class="vm"><div class="t">四季平安 · 隶书入门第十七讲</div><div class="u">42:10</div></div>
+            </div>
+            <div class="acts"><span>↥ 加入清单</span><span>✓ 已看</span><span>⋯</span></div>
+          </div>
+        </div>
+        <div class="dyn">
+          <div class="ava">满</div>
+          <div class="body">
+            <div class="head"><b>小满写隶书</b><span>前天 21:30</span><span class="pill">本地</span></div>
+            <div class="text">新投稿</div>
+            <div class="vcard">
+              <div class="thumb t3">封面</div>
+              <div class="vm"><div class="t">三阳开泰 · 隶书写法拆解</div><div class="u">18:05</div></div>
+            </div>
+            <div class="acts"><b>✓ 已加入</b><span>✓ 已看</span><span>⋯</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="g">⌂</span>首页<span class="dot">5</span></a><a><span class="g">☺</span>我的</a></div>
+    </div>
+    <div class="annotation">每个 UP / 合集一个横向 tab；点击进入时清除该源未读 badge。</div>
+  </div>
+
+  <!-- 3 官方动态参照 -->
+  <div class="item">
+    <h2>③ 官方动态参照<small>样式对照，不作为入口</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="top"><div class="title">动态</div><div class="ico">⌕</div></div>
+      <div class="scroll">
+        <div class="tabs"><div class="tab on">全部</div><div class="tab">特别关注</div><div class="tab">我的关注</div></div>
+        <div class="dyn">
+          <div class="ava g">官</div>
+          <div class="body">
+            <div class="head"><b>关注的 UP</b><span>官方动态</span><span class="pill blue">官方 API</span></div>
+            <div class="text">发布了新视频</div>
+            <div class="vcard">
+              <div class="thumb t2">封面</div>
+              <div class="vm"><div class="t">视频标题由推荐 / 关注流决定</div><div class="u">时长 · 播放量</div></div>
+            </div>
+            <div class="acts"><span>↥ 转发</span><span>◯ 评论</span><span>♡ 点赞</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="g">⌂</span>首页</a><a><span class="g">☺</span>我的</a></div>
+    </div>
+    <div class="annotation">官方动态仅作视觉对照；入口在「我的 → 设置 → 推荐流设置」。</div>
+  </div>
+
+  <!-- 4 管理 -->
+  <div class="item">
+    <h2>④ 订阅管理<small>添加 / 删除 / 下拉刷新</small></h2>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+      <div class="top"><div class="title">首页</div><div class="ico">⌕</div></div>
+      <div class="scroll" style="background:rgba(0,0,0,.25)">
+        <div class="tabs"><div class="tab on">全部</div><div class="tab">小满写隶书</div><div class="tab">隶书合集</div><div class="ico">＋</div><div class="ico">⚙</div></div>
+        <div class="sheet">
+          <h3>我的订阅</h3>
+          <div class="row"><div class="ava">满</div><div class="info"><b>小满写隶书</b><p>UP 投稿 · 3 条未读</p></div><span class="n">3</span><div class="ico">✕</div></div>
+          <div class="row"><div class="ava g">集</div><div class="info"><b>隶书合集</b><p>视频合集 · 2 条未读</p></div><span class="n">2</span><div class="ico">✕</div></div>
+          <div class="row"><div class="ico">＋</div><div class="info"><b>添加订阅</b><p>UP 主 / 视频合集</p></div></div>
+        </div>
+      </div>
+      <div class="nav"><a class="on"><span class="g">⌂</span>首页<span class="dot">5</span></a><a><span class="g">☺</span>我的</a></div>
+    </div>
+    <div class="annotation">没有手动刷新按钮，统一在订阅页下拉刷新。</div>
+  </div>
+
+</div>
+<footer>本地订阅 = 动态流样式 + 本地规则数据源；不注入算法推荐。</footer>
+</body>
+</html>
