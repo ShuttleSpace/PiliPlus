@@ -30,6 +30,8 @@ class LearningLibrary {
       loadFromJson(const <dynamic>[]);
       createList('待阅清单');
     }
+    // 订阅更新清单在 UI 构建前就建好，避免页面 initState 里刷新 Rx 打断构建。
+    ensureFeedList();
   }
 
   void loadFromJson(List<dynamic> raw) {
