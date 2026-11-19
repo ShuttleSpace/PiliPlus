@@ -135,7 +135,10 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
                                 : null,
                             color: index == _index
                                 ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.onSurface,
+                                : Theme.of(context).brightness ==
+                                      Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
                           ),
                         ),
                         if (unread > 0)

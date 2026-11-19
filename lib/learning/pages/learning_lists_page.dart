@@ -105,10 +105,12 @@ class _ListCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  list.name,
+                  list.name.isEmpty ? '未命名清单' : list.name,
                   style: TextStyle(
                     fontSize: 14,
-                    color: theme.colorScheme.onSurface,
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                 ),
                 const SizedBox(width: 6),
