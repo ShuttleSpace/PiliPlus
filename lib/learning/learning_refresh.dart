@@ -53,6 +53,7 @@ class LearningRefresh {
                     title: item.title,
                     cover: item.cover ?? '',
                     cid: item.cid,
+                    author: item.owner.name ?? '',
                   ),
                 )
                 .toList() ??
@@ -61,9 +62,15 @@ class LearningRefresh {
       Error(:final errMsg) => RefreshOutcome(
         0,
         source.seenBvids,
+        const <String>[],
         errMsg ?? '刷新失败',
       ),
-      Loading() => RefreshOutcome(0, source.seenBvids, '刷新中'),
+      Loading() => RefreshOutcome(
+        0,
+        source.seenBvids,
+        const <String>[],
+        '刷新中',
+      ),
     };
   }
 }

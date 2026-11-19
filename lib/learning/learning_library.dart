@@ -139,6 +139,7 @@ class LearningLibrary {
     'exportedAt': DateTime.now().toIso8601String(),
     'lists': exportJson(),
     'sources': LearningSources.instance.exportJson(),
+    'groups': LearningSources.instance.exportGroups(),
     'progress': LearningProgress.instance.exportJson(),
   };
 
@@ -174,8 +175,12 @@ class LearningLibrary {
     final preview = previewBackup(backup);
     final sourcesPreview = previewBackupSources(backup);
     loadFromJson(preview.map((list) => list.toJson()).toList());
+    final rawGroups = backup['groups'];
     LearningSources.instance.loadFromJson(
       sourcesPreview.map((source) => source.toJson()).toList(),
+      groups: rawGroups is List
+          ? rawGroups.map((e) => e.toString()).toList()
+          : null,
     );
     final rawProgress = backup['progress'];
     LearningProgress.instance.loadFromJson(

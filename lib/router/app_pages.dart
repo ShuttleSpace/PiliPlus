@@ -1,4 +1,4 @@
-import 'package:PiliPlus/learning/pages/discovery_page.dart';
+import 'package:PiliPlus/learning/pages/learning_home_page.dart';
 import 'package:PiliPlus/learning/pages/learning_history_page.dart';
 import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/learning/pages/learning_sources_page.dart';
@@ -101,8 +101,8 @@ class Routes {
       name: '/learningHistory',
       page: () => const LearningHistoryPage(),
     ),
-    // 算法发现页（三级入口）
-    GetPage(name: '/discovery', page: () => const DiscoveryPage()),
+    // 自主订阅首页（底部「首页」）
+    GetPage(name: '/learningHome', page: () => const LearningHomePage()),
     // 历史记录
     GetPage(name: '/history', page: () => const HistoryPage()),
     // 搜索页面

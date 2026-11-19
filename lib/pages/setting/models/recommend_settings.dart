@@ -14,10 +14,14 @@ import 'package:material_ui/material_ui.dart' hide StatefulBuilder;
 
 List<SettingsModel> get recommendSettings => [
   NormalModel(
-    title: '算法发现页',
-    subtitle: '已从首页折叠，仅从此入口进入',
-    leading: const Icon(Icons.explore_outlined),
-    onTap: (_, _) => Get.toNamed('/discovery'),
+    title: '原版首页',
+    leading: const Icon(Icons.home_outlined),
+    onTap: (_, _) => Get.toNamed('/home'),
+  ),
+  NormalModel(
+    title: '动态',
+    leading: const Icon(Icons.dynamic_feed_outlined),
+    onTap: (_, _) => Get.toNamed('/dynamics'),
   ),
   NormalModel(
     title: '首页推荐来源',

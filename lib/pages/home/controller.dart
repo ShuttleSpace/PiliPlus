@@ -1,8 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/learning/learning_controller.dart';
-import 'package:PiliPlus/learning/learning_sources_controller.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
@@ -10,7 +9,6 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:get/get.dart';
@@ -65,28 +63,16 @@ class HomeController extends GetxController
   Future<void> showRefresh() => controller.showRefresh();
 
   void setTabConfig() {
-    final stored = GStorage.setting.get(SettingBoxKey.tabBarSort) as List?;
-    // 自主订阅模式：推荐流不作为入口，清单置顶为首页。
-    final configured =
-        List<HomeTabType>.from(
-            stored != null
-                ? stored.map((i) => HomeTabType.values[i])
-                : HomeTabType.values,
-          )
-          ..remove(HomeTabType.rcmd)
-          ..remove(HomeTabType.learning)
-          ..insert(0, HomeTabType.learning)
-          ..remove(HomeTabType.sources)
-          ..insert(1, HomeTabType.sources);
-
-    Get
-      ..putOrFind(LearningController.new)
-      ..putOrFind(LearningSourcesController.new);
-    tabs = configured;
+    final tabs = GStorage.setting.get(SettingBoxKey.tabBarSort) as List?;
+    if (tabs != null) {
+      this.tabs = tabs.map((i) => HomeTabType.values[i]).toList();
+    } else {
+      this.tabs = HomeTabType.values;
+    }
 
     tabController = TabController(
-      initialIndex: 0,
-      length: tabs.length,
+      initialIndex: max(0, this.tabs.indexOf(HomeTabType.rcmd)),
+      length: this.tabs.length,
       vsync: this,
     );
   }

@@ -4,6 +4,8 @@ class LearningVideo {
     required this.title,
     this.cover = '',
     this.cid,
+    this.sourceId,
+    this.author = '',
     DateTime? addedAt,
   }) : addedAt = addedAt ?? DateTime.now();
 
@@ -11,6 +13,8 @@ class LearningVideo {
   final String title;
   final String cover;
   final int? cid;
+  final String? sourceId;
+  final String author;
   final DateTime addedAt;
 
   Map<String, dynamic> toJson() => {
@@ -18,6 +22,8 @@ class LearningVideo {
     'title': title,
     'cover': cover,
     'cid': cid,
+    'sourceId': sourceId,
+    'author': author,
     'addedAt': addedAt.millisecondsSinceEpoch,
   };
 
@@ -26,6 +32,8 @@ class LearningVideo {
     title: json['title'] as String? ?? '',
     cover: json['cover'] as String? ?? '',
     cid: json['cid'] as int?,
+    sourceId: json['sourceId'] as String?,
+    author: json['author'] as String? ?? '',
     addedAt: DateTime.fromMillisecondsSinceEpoch(
       (json['addedAt'] as int?) ?? DateTime.now().millisecondsSinceEpoch,
     ),

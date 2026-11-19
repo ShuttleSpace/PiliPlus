@@ -14,10 +14,7 @@ import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:collection/collection.dart';
@@ -225,17 +222,8 @@ class MainController extends GetxController
   }
 
   void setNavBarConfig() {
-    List<int>? navBarSort =
-        (GStorage.setting.get(SettingBoxKey.navBarSort) as List?)?.fromCast();
-    late final List<NavigationBarType> navigationBars;
-    if (navBarSort == null || navBarSort.isEmpty) {
-      navigationBars = NavigationBarType.values;
-    } else {
-      navigationBars = navBarSort
-          .map(NavigationBarType.values.elementAt)
-          .toList();
-    }
-    this.navigationBars = navigationBars;
+    // 自主订阅模式：底部固定「首页 / 我的」，动态与算法首页收进设置。
+    navigationBars = const [NavigationBarType.home, NavigationBarType.mine];
     final defPage = Pref.defaultHomePage;
     selectedIndex.value = math.max(0, navigationBars.indexOf(defPage));
   }

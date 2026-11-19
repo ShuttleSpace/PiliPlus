@@ -59,4 +59,37 @@ void main() {
     expect(sources.sources.single.targetListId, isNotEmpty);
     expect(library.lists, hasLength(1));
   });
+
+  test('分组与未读 badge 可增删改，点击订阅后清零', () {
+    final listId = library.ensureFeedList();
+    sources
+      ..addGroup('课程')
+      ..addGroup('技术');
+    final source = sources.add(
+      type: LearningSourceType.upArchive,
+      mid: 7,
+      name: '老师',
+      targetListId: listId,
+      group: '课程',
+    );
+
+    sources.recordRefresh(
+      id: source.id,
+      seenBvids: const ['BV1', 'BV2'],
+      newBvids: const ['BV1', 'BV2'],
+    );
+    expect(sources.totalUnread, 2);
+    expect(sources.unreadBvids, contains('BV2'));
+
+    sources.markSourceRead(source.id);
+    expect(sources.totalUnread, 0);
+
+    sources.moveSource(source.id, '技术');
+    expect(sources.find(source.id)?.group, '技术');
+    sources.deleteGroup('技术');
+    expect(sources.find(source.id)?.group, LearningSources.defaultGroup);
+
+    final backup = library.toBackup();
+    expect(backup['groups'], contains('课程'));
+  });
 }
