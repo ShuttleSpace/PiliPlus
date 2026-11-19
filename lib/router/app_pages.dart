@@ -2,6 +2,7 @@ import 'package:PiliPlus/learning/pages/learning_home_page.dart';
 import 'package:PiliPlus/learning/pages/learning_history_page.dart';
 import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/learning/pages/learning_sources_page.dart';
+import 'package:PiliPlus/learning/widgets/immersed_page.dart';
 import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -79,7 +80,10 @@ class Routes {
   static final List<GetPage<dynamic>> getPages = [
     GetPage(name: '/', page: () => const MainApp()),
     // 首页(推荐)
-    GetPage(name: '/home', page: () => const HomePage()),
+    GetPage(
+      name: '/home',
+      page: () => const ImmersedPage(child: HomePage()),
+    ),
     // 热门
     GetPage(name: '/hot', page: () => const HotPage()),
     // 视频详情
@@ -110,7 +114,10 @@ class Routes {
     // 搜索结果
     GetPage(name: '/searchResult', page: () => const SearchResultPage()),
     // 动态
-    GetPage(name: '/dynamics', page: () => const DynamicsPage()),
+    GetPage(
+      name: '/dynamics',
+      page: () => const ImmersedPage(child: DynamicsPage()),
+    ),
     // 动态详情
     GetPage(name: '/dynamicDetail', page: () => const DynamicDetailPage()),
     // 关注

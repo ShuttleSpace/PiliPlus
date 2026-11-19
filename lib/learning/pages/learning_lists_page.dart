@@ -104,7 +104,13 @@ class _ListCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(list.name, style: const TextStyle(fontSize: 14)),
+                Text(
+                  list.name,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   '${videos.length} 个视频',
@@ -114,8 +120,30 @@ class _ListCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                PopupMenuButton<String>(
-                  onSelected: (action) async {
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () async {
+                    final action = await showModalBottomSheet<String>(
+                      context: context,
+                      builder: (sheetContext) => SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: const Text('重命名'),
+                              onTap: () =>
+                                  Navigator.pop(sheetContext, 'rename'),
+                            ),
+                            ListTile(
+                              title: const Text('删除'),
+                              onTap: () =>
+                                  Navigator.pop(sheetContext, 'delete'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                    if (!context.mounted) return;
                     final library = LearningLibrary.instance;
                     if (action == 'rename') {
                       final name = await askName(
@@ -129,10 +157,6 @@ class _ListCard extends StatelessWidget {
                       SmartDialog.showToast('已删除');
                     }
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'rename', child: Text('重命名')),
-                    PopupMenuItem(value: 'delete', child: Text('删除')),
-                  ],
                 ),
               ],
             ),

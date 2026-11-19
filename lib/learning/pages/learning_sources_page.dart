@@ -5,6 +5,7 @@ import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/learning_video_card.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:flutter/material.dart' as fw;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -134,7 +135,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
                                 : null,
                             color: index == _index
                                 ? Theme.of(context).colorScheme.primary
-                                : null,
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         if (unread > 0)
@@ -170,17 +171,22 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
               onPageChanged: (index) => setState(() => _index = index),
               itemCount: tabs.length,
               itemBuilder: (context, index) {
+                final Widget child;
                 if (index == 0) {
-                  return _FeedView(onlyUnread: true, onRefresh: _refresh);
+                  child = _FeedView(onlyUnread: true, onRefresh: _refresh);
+                } else if (index == 1) {
+                  child = _FeedView(onlyUnread: false, onRefresh: _refresh);
+                } else {
+                  child = _GroupSourcesView(
+                    group: tabs[index],
+                    onOpen: _openSource,
+                    onAdd: _showAddSourceDialog,
+                    onRefresh: _refresh,
+                  );
                 }
-                if (index == 1) {
-                  return _FeedView(onlyUnread: false, onRefresh: _refresh);
-                }
-                return _GroupSourcesView(
-                  group: tabs[index],
-                  onOpen: _openSource,
-                  onAdd: _showAddSourceDialog,
-                  onRefresh: _refresh,
+                return fw.Material(
+                  type: fw.MaterialType.transparency,
+                  child: child,
                 );
               },
             ),
@@ -409,86 +415,112 @@ class _GroupSourcesView extends StatelessWidget {
       final sources = LearningSources.instance.sources
           .where((s) => s.group == group)
           .toList();
-      return Scaffold(
-        floatingActionButton: FloatingActionButton.small(
-          onPressed: onAdd,
-          child: const Icon(Icons.add),
-        ),
-        body: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: sources.length + 1,
-            itemBuilder: (context, index) {
-              if (index == sources.length) {
-                final real = sources.length;
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: 80,
-                    top: real == 0 ? 160 : 10,
-                  ),
-                  child: Center(
-                    child: Text(
-                      real == 0 ? '该分组还没有订阅' : '共 $real 个订阅',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
+      return Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: onRefresh,
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: sources.length + 1,
+              itemBuilder: (context, index) {
+                if (index == sources.length) {
+                  final real = sources.length;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: 80,
+                      top: real == 0 ? 160 : 10,
+                    ),
+                    child: Center(
+                      child: Text(
+                        real == 0 ? '该分组还没有订阅' : '共 $real 个订阅',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
                       ),
                     ),
+                  );
+                }
+                final source = sources[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Text(source.name.characters.first),
                   ),
-                );
-              }
-              final source = sources[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(source.name.characters.first),
-                ),
-                title: Text(source.name),
-                subtitle: Text(source.type.label),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (source.unreadBvids.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${source.unreadBvids.length}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontSize: 11,
+                  title: Text(source.name),
+                  subtitle: Text(source.type.label),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (source.unreadBvids.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${source.unreadBvids.length}',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
-                      ),
-                    PopupMenuButton<String>(
-                      onSelected: (action) {
-                        if (action == 'delete') {
-                          LearningSources.instance.remove(source.id);
-                        } else if (action.startsWith('move:')) {
-                          LearningSources.instance.moveSource(
-                            source.id,
-                            action.substring(5),
+                      IconButton(
+                        icon: const Icon(Icons.more_vert),
+                        onPressed: () async {
+                          final action = await showModalBottomSheet<String>(
+                            context: context,
+                            builder: (sheetContext) => SafeArea(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (final g
+                                      in LearningSources.instance.groups)
+                                    ListTile(
+                                      title: Text('移到 $g'),
+                                      onTap: () => Navigator.pop(
+                                        sheetContext,
+                                        'move:$g',
+                                      ),
+                                    ),
+                                  ListTile(
+                                    title: const Text('删除'),
+                                    onTap: () =>
+                                        Navigator.pop(sheetContext, 'delete'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        for (final g in LearningSources.instance.groups)
-                          PopupMenuItem(value: 'move:$g', child: Text('移到 $g')),
-                        const PopupMenuItem(value: 'delete', child: Text('删除')),
-                      ],
-                    ),
-                  ],
-                ),
-                onTap: () => onOpen(source),
-              );
-            },
+                          if (action == 'delete') {
+                            LearningSources.instance.remove(source.id);
+                          } else if (action?.startsWith('move:') == true) {
+                            LearningSources.instance.moveSource(
+                              source.id,
+                              action!.substring(5),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  onTap: () => onOpen(source),
+                );
+              },
+            ),
           ),
-        ),
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton.small(
+              onPressed: onAdd,
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ],
       );
     });
   }
