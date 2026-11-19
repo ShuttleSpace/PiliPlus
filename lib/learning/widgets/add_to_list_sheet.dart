@@ -1,3 +1,4 @@
+import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:PiliPlus/learning/learning_list.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:material_ui/material_ui.dart';
@@ -100,7 +101,7 @@ void showAddToLearningListSheet(
   );
 }
 
-Future<String?> _askName(BuildContext context) => showDialog<String>(
+Future<String?> _askName(BuildContext context) => showLearningDialog<String>(
   context: context,
   builder: (context) {
     final controller = TextEditingController();

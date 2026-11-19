@@ -4,6 +4,7 @@ import 'package:PiliPlus/learning/learning_refresh.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/learning_video_card.dart';
+import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart' as fw;
 import 'package:get/get.dart';
@@ -13,9 +14,11 @@ class LearningSourcesPage extends StatelessWidget {
   const LearningSourcesPage({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('我的订阅')),
-    body: const LearningSourcesView(),
+  Widget build(BuildContext context) => LearningLocalizations(
+    child: Scaffold(
+      appBar: AppBar(title: const Text('我的订阅')),
+      body: const LearningSourcesView(),
+    ),
   );
 }
 
@@ -187,9 +190,11 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
                     onRefresh: _refresh,
                   );
                 }
-                return fw.Material(
-                  type: fw.MaterialType.transparency,
-                  child: child,
+                return LearningLocalizations(
+                  child: fw.Material(
+                    type: fw.MaterialType.transparency,
+                    child: child,
+                  ),
                 );
               },
             ),
@@ -212,7 +217,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
     final midCtr = TextEditingController();
     final refCtr = TextEditingController();
     final nameCtr = TextEditingController();
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showLearningDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -298,11 +303,18 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
   }
 }
 
-class _FeedView extends StatelessWidget {
+class _FeedView extends StatefulWidget {
   const _FeedView({required this.onlyUnread, required this.onRefresh});
 
   final bool onlyUnread;
   final Future<void> Function() onRefresh;
+
+  @override
+  State<_FeedView> createState() => _FeedViewState();
+}
+
+class _FeedViewState extends State<_FeedView> {
+  bool _bySource = true;
 
   @override
   Widget build(BuildContext context) {
@@ -311,89 +323,125 @@ class _FeedView extends StatelessWidget {
     return Obx(() {
       final feedId = library.ensureFeedList();
       var videos = library.find(feedId)?.videos ?? <LearningVideo>[];
-      if (onlyUnread) {
+      if (widget.onlyUnread) {
         videos = videos
             .where((v) => sources.unreadBvids.contains(v.bvid))
             .toList();
       }
-      final bySource = <String, List<LearningVideo>>{};
+      final grouped = <String, List<LearningVideo>>{};
       for (final video in videos) {
-        (bySource[video.sourceId ?? ''] ??= <LearningVideo>[]).add(video);
+        final source = sources.find(video.sourceId ?? '');
+        final key = _bySource
+            ? (source?.name ?? '其他')
+            : (source?.group ?? LearningSources.defaultGroup);
+        (grouped[key] ??= <LearningVideo>[]).add(video);
       }
-      if (videos.isEmpty) {
-        return RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              SizedBox(
-                height: 300,
-                child: Center(
-                  child: Text(onlyUnread ? '暂无新视频' : '暂无更新内容'),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: bySource.length,
-          itemBuilder: (context, sectionIndex) {
-            final entry = bySource.entries.elementAt(sectionIndex);
-            final source = sources.find(entry.key);
-            final unread = source?.unreadBvids.length ?? 0;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
-                  child: Row(
+
+      final list = RefreshIndicator(
+        onRefresh: widget.onRefresh,
+        child: grouped.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: 300,
+                    child: Center(
+                      child: Text(widget.onlyUnread ? '暂无新视频' : '暂无更新内容'),
+                    ),
+                  ),
+                ],
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: grouped.length,
+                itemBuilder: (context, sectionIndex) {
+                  final entry = grouped.entries.elementAt(sectionIndex);
+                  final source = _bySource
+                      ? sources.sources
+                            .where((s) => s.name == entry.key)
+                            .firstOrNull
+                      : null;
+                  final unread = source?.unreadBvids.length ?? 0;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        source?.name ?? '其他',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      if (unread > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 6),
-                          child: Text(
-                            '$unread 条新视频',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).colorScheme.primary,
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                        child: Row(
+                          children: [
+                            Text(
+                              entry.key,
+                              style: const TextStyle(fontSize: 14),
                             ),
-                          ),
+                            if (unread > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: Text(
+                                  '$unread 条新视频',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  ),
+                                ),
+                              ),
+                            const Spacer(),
+                            if (source != null)
+                              InkWell(
+                                onTap: () {
+                                  sources.markSourceRead(source.id);
+                                  Get.toNamed('/member?mid=${source.mid}');
+                                },
+                                child: Text(
+                                  '查看该 UP 全部 ›',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      const Spacer(),
-                      if (source != null)
-                        InkWell(
-                          onTap: () {
-                            sources.markSourceRead(source.id);
-                            Get.toNamed('/member?mid=${source.mid}');
-                          },
-                          child: Text(
-                            '查看该 UP 全部 ›',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
+                      ),
+                      for (final video in entry.value)
+                        LearningVideoCard(
+                          video: video,
+                          showNew: sources.unreadBvids.contains(video.bvid),
                         ),
                     ],
+                  );
+                },
+              ),
+      );
+
+      if (widget.onlyUnread) return list;
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            child: Row(
+              children: [
+                Text(
+                  _bySource ? '按 UP 查看' : '按分组查看',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
-                for (final video in entry.value)
-                  LearningVideoCard(
-                    video: video,
-                    showNew: sources.unreadBvids.contains(video.bvid),
-                  ),
+                const Spacer(),
+                IconButton(
+                  tooltip: '切换分组 / UP',
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  onPressed: () => setState(() => _bySource = !_bySource),
+                ),
               ],
-            );
-          },
-        ),
+            ),
+          ),
+          Expanded(child: list),
+        ],
       );
     });
   }
@@ -474,7 +522,7 @@ class _GroupSourcesView extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.more_vert),
                         onPressed: () async {
-                          final action = await showModalBottomSheet<String>(
+                          final action = await showLearningBottomSheet<String>(
                             context: context,
                             builder: (sheetContext) => SafeArea(
                               child: Column(
@@ -535,7 +583,7 @@ Future<String?> askName(
   String initial = '',
 }) {
   final controller = TextEditingController(text: initial);
-  return showDialog<String>(
+  return showLearningDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_list.dart';
@@ -12,22 +13,24 @@ class LearningListsPage extends StatelessWidget {
   const LearningListsPage({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('我的清单'),
-      actions: [
-        IconButton(
-          tooltip: '备份/迁移',
-          icon: const Icon(Icons.backup_outlined),
-          onPressed: () => showBackupDialog(context),
-        ),
-      ],
+  Widget build(BuildContext context) => LearningLocalizations(
+    child: Scaffold(
+      appBar: AppBar(
+        title: const Text('我的清单'),
+        actions: [
+          IconButton(
+            tooltip: '备份/迁移',
+            icon: const Icon(Icons.backup_outlined),
+            onPressed: () => showBackupDialog(context),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => createList(context),
+        child: const Icon(Icons.add),
+      ),
+      body: const LearningListsView(),
     ),
-    floatingActionButton: FloatingActionButton(
-      onPressed: () => createList(context),
-      child: const Icon(Icons.add),
-    ),
-    body: const LearningListsView(),
   );
 }
 
@@ -125,7 +128,7 @@ class _ListCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () async {
-                    final action = await showModalBottomSheet<String>(
+                    final action = await showLearningBottomSheet<String>(
                       context: context,
                       builder: (sheetContext) => SafeArea(
                         child: Column(
@@ -226,41 +229,43 @@ class LearningListDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final library = LearningLibrary.instance;
-    return Scaffold(
-      appBar: AppBar(
-        title: Obx(() => Text(library.find(listId)?.name ?? '清单已删除')),
-      ),
-      body: Obx(() {
-        final list = library.find(listId);
-        if (list == null) return const Center(child: Text('清单不存在'));
-        if (list.videos.isEmpty) {
-          return const Center(child: Text('清单为空：在播放页点「清单」加入视频'));
-        }
-        return ListView.separated(
-          itemCount: list.videos.length,
-          separatorBuilder: (_, _) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final video = list.videos[index];
-            return Stack(
-              children: [
-                LearningVideoCard(video: video),
-                Positioned(
-                  right: 10,
-                  bottom: 10,
-                  child: IconButton(
-                    tooltip: '移出',
-                    icon: const Icon(Icons.remove_circle_outline, size: 18),
-                    onPressed: () {
-                      library.removeVideo(listId: listId, bvid: video.bvid);
-                      SmartDialog.showToast('已移出清单');
-                    },
+    return LearningLocalizations(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Obx(() => Text(library.find(listId)?.name ?? '清单已删除')),
+        ),
+        body: Obx(() {
+          final list = library.find(listId);
+          if (list == null) return const Center(child: Text('清单不存在'));
+          if (list.videos.isEmpty) {
+            return const Center(child: Text('清单为空：在播放页点「清单」加入视频'));
+          }
+          return ListView.separated(
+            itemCount: list.videos.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final video = list.videos[index];
+              return Stack(
+                children: [
+                  LearningVideoCard(video: video),
+                  Positioned(
+                    right: 10,
+                    bottom: 10,
+                    child: IconButton(
+                      tooltip: '移出',
+                      icon: const Icon(Icons.remove_circle_outline, size: 18),
+                      onPressed: () {
+                        library.removeVideo(listId: listId, bvid: video.bvid);
+                        SmartDialog.showToast('已移出清单');
+                      },
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
-        );
-      }),
+                ],
+              );
+            },
+          );
+        }),
+      ),
     );
   }
 }
@@ -282,7 +287,7 @@ void showBackupDialog(BuildContext context) {
     onImport: (json) async {
       final preview = library.previewBackup(json);
       final sourceCount = library.previewBackupSources(json).length;
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showLearningDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('确认导入？'),
@@ -314,7 +319,7 @@ Future<String?> askName(
   String initial = '',
 }) {
   final controller = TextEditingController(text: initial);
-  return showDialog<String>(
+  return showLearningDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),

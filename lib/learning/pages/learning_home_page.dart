@@ -1,6 +1,7 @@
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/learning/pages/learning_sources_page.dart';
+import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:flutter/material.dart' as fw;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -77,18 +78,22 @@ class _LearningHomePageState extends State<LearningHomePage>
             child: TabBarView(
               controller: _tabs,
               children: [
-                fw.Material(
-                  type: fw.MaterialType.transparency,
-                  child: LearningListsView(
-                    embedded: true,
-                    scrollController: _listScroll,
+                LearningLocalizations(
+                  child: fw.Material(
+                    type: fw.MaterialType.transparency,
+                    child: LearningListsView(
+                      embedded: true,
+                      scrollController: _listScroll,
+                    ),
                   ),
                 ),
-                fw.Material(
-                  type: fw.MaterialType.transparency,
-                  child: LearningSourcesView(
-                    embedded: true,
-                    scrollController: _sourceScroll,
+                LearningLocalizations(
+                  child: fw.Material(
+                    type: fw.MaterialType.transparency,
+                    child: LearningSourcesView(
+                      embedded: true,
+                      scrollController: _sourceScroll,
+                    ),
                   ),
                 ),
               ],

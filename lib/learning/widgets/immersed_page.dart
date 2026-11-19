@@ -20,9 +20,9 @@ class ImmersedPage extends StatelessWidget {
         systemNavigationBarColor: Colors.transparent,
         systemNavigationBarIconBrightness: theme.brightness.reverse,
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: Padding(
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: Padding(
           padding: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
           child: child,
         ),
