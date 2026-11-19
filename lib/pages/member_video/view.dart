@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show ReloadScrollPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/learning/learning_subscribe.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
@@ -253,6 +254,18 @@ class _MemberVideoState extends State<MemberVideo>
             ?_buildCount(),
             ?_buildEpisodeBtn(theme),
             const Spacer(),
+            if (widget.seasonId != null || widget.seriesId != null)
+              IconButton(
+                tooltip: '订阅此合集',
+                icon: const Icon(Icons.playlist_add_check_circle_outlined),
+                color: theme.colorScheme.primary,
+                onPressed: () => subscribeCollection(
+                  mid: widget.mid,
+                  seasonId: widget.seasonId,
+                  seriesId: widget.seriesId,
+                  name: widget.title,
+                ),
+              ),
             _buildSortBtn(theme),
           ],
         ),
