@@ -38,6 +38,23 @@ class _LearningHomePageState extends State<LearningHomePage>
       type: fw.MaterialType.transparency,
       child: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+            child: Row(
+              children: [
+                Text(
+                  '首页',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: '搜索',
+                  icon: const Icon(Icons.search),
+                  onPressed: () => Get.toNamed('/search'),
+                ),
+              ],
+            ),
+          ),
           TabBar(
             controller: _tabs,
             tabs: [

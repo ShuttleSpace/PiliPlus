@@ -47,6 +47,7 @@ class LearningList {
     List<LearningVideo>? videos,
     DateTime? createdAt,
     DateTime? updatedAt,
+    this.isFeed = false,
   }) : videos = videos ?? <LearningVideo>[],
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -56,6 +57,7 @@ class LearningList {
   final List<LearningVideo> videos;
   final DateTime createdAt;
   DateTime updatedAt;
+  bool isFeed;
 
   bool contains(String bvid) => videos.any((item) => item.bvid == bvid);
 
@@ -64,6 +66,7 @@ class LearningList {
     'name': name,
     'createdAt': createdAt.millisecondsSinceEpoch,
     'updatedAt': updatedAt.millisecondsSinceEpoch,
+    'isFeed': isFeed,
     'videos': videos.map((item) => item.toJson()).toList(),
   };
 
@@ -84,5 +87,6 @@ class LearningList {
     updatedAt: DateTime.fromMillisecondsSinceEpoch(
       (json['updatedAt'] as int?) ?? DateTime.now().millisecondsSinceEpoch,
     ),
+    isFeed: (json['isFeed'] as bool?) ?? (json['name'] as String?) == '订阅更新',
   );
 }

@@ -48,13 +48,14 @@ class LearningListsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final library = LearningLibrary.instance;
     return Obx(() {
-      if (library.lists.isEmpty) {
+      final lists = library.lists.where((l) => !l.isFeed).toList();
+      if (lists.isEmpty) {
         return const Center(child: Text('还没有清单'));
       }
       return ListView.separated(
         controller: scrollController,
         padding: const EdgeInsets.only(bottom: 16),
-        itemCount: library.lists.length + (embedded ? 1 : 0),
+        itemCount: lists.length + (embedded ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 2),
         itemBuilder: (context, index) {
           if (embedded && index == 0) {
@@ -81,7 +82,7 @@ class LearningListsView extends StatelessWidget {
               ),
             );
           }
-          final list = library.lists[index - (embedded ? 1 : 0)];
+          final list = lists[index - (embedded ? 1 : 0)];
           return _ListCard(list: list);
         },
       );

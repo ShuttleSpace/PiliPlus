@@ -71,9 +71,14 @@ class LearningLibrary {
   /// 订阅刷新结果统一进入这个清单；它只是一个普通清单，用户可自由搬移。
   String ensureFeedList() {
     for (final list in lists) {
-      if (list.name == '订阅更新') return list.id;
+      if (list.isFeed || list.name == '订阅更新') {
+        list.isFeed = true;
+        return list.id;
+      }
     }
-    return createList('订阅更新').id;
+    final list = createList('订阅更新')..isFeed = true;
+    _persist();
+    return list.id;
   }
 
   void renameList(String id, String name) {

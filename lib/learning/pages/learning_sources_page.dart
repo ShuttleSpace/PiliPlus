@@ -5,10 +5,9 @@ import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/learning_video_card.dart';
 import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:flutter/material.dart' as fw;
 import 'package:get/get.dart';
-import 'package:material_ui/material_ui.dart';
 
 class LearningSourcesPage extends StatelessWidget {
   const LearningSourcesPage({super.key});
@@ -22,7 +21,7 @@ class LearningSourcesPage extends StatelessWidget {
   );
 }
 
-/// 首页「订阅」tab：顶部横向分组 tab + 下拉刷新。
+/// 首页「订阅」tab：全部（时间线）+ 每个 UP / 合集一个横向 tab。
 class LearningSourcesView extends StatefulWidget {
   const LearningSourcesView({
     super.key,
@@ -42,28 +41,18 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
   int _index = 0;
   bool _refreshing = false;
 
-  List<String> get _tabs => [
-    '更新',
-    '全部',
-    ...LearningSources.instance.groups.where((g) => g != '未分组'),
-  ];
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  List<LearningSource> get _sources =>
+      LearningSources.instance.sources.toList();
 
   Future<void> _refresh() async {
     if (_refreshing) return;
     _refreshing = true;
-    final tabs = _tabs;
-    final group = _index >= 2 ? tabs[_index] : null;
-    final targets = group == null
-        ? LearningSources.instance.sources.toList()
-        : LearningSources.instance.sources
-              .where((source) => source.group == group)
-              .toList();
+    final sources = _sources;
+    final targets = _index == 0
+        ? sources
+        : (_index - 1 < sources.length
+              ? [sources[_index - 1]]
+              : <LearningSource>[]);
     var added = 0;
     for (final source in targets) {
       final outcome = await LearningRefresh.refresh(
@@ -79,10 +68,10 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
       added += outcome.added;
     }
     _refreshing = false;
-    if (added > 0) {
-      SmartDialog.showToast('新增 $added 个视频');
-    } else if (targets.isEmpty) {
+    if (targets.isEmpty) {
       SmartDialog.showToast('还没有订阅源');
+    } else if (added > 0) {
+      SmartDialog.showToast('新增 $added 个视频');
     } else {
       SmartDialog.showToast('暂无更新');
     }
@@ -94,76 +83,100 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final tabs = _tabs;
-      if (_index >= tabs.length) {
-        _index = tabs.length - 1;
-      }
+      final sources = _sources;
+      final tabs = <String>['全部', ...sources.map((s) => s.name)];
+      if (_index >= tabs.length) _index = tabs.length - 1;
+      if (sources.isEmpty && _index != 0) _index = 0;
+
       return Column(
         children: [
           SizedBox(
-            height: 42,
-            child: ListView.separated(
+            height: 44,
+            child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: tabs.length + 1,
-              separatorBuilder: (_, _) => const SizedBox(width: 16),
+              itemCount: tabs.length + 2,
               itemBuilder: (context, index) {
                 if (index == tabs.length) {
                   return Align(
                     child: IconButton(
                       icon: const Icon(Icons.add),
-                      onPressed: _showGroupDialog,
+                      onPressed: showAddSourceDialog,
+                    ),
+                  );
+                }
+                if (index == tabs.length + 1) {
+                  return Align(
+                    child: IconButton(
+                      icon: const Icon(Icons.manage_accounts_outlined),
+                      onPressed: showManageSheet,
                     ),
                   );
                 }
                 final unread = index == 0
                     ? LearningSources.instance.totalUnread
-                    : 0;
+                    : sources[index - 1].unreadBvids.length;
                 return Align(
-                  child: InkWell(
-                    onTap: () {
-                      _index = index;
-                      _pageController.jumpToPage(index);
-                    },
-                    child: Row(
-                      children: [
-                        Text(
-                          tabs[index],
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: index == _index
-                                ? FontWeight.bold
-                                : null,
-                            color: index == _index
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).brightness ==
-                                      Brightness.dark
-                                ? Colors.white
-                                : Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: InkWell(
+                      onTap: () {
+                        if (index > 0) {
+                          LearningSources.instance.markSourceRead(
+                            sources[index - 1].id,
+                          );
+                        }
+                        setState(() => _index = index);
+                        _pageController.jumpToPage(index);
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            tabs[index],
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: index == _index
+                                  ? FontWeight.bold
+                                  : null,
+                              color: index == _index
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).brightness ==
+                                        Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                           ),
-                        ),
-                        if (unread > 0)
-                          Container(
-                            margin: const EdgeInsets.only(left: 4),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 1,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: Text(
-                              '$unread',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontSize: 10,
+                          if (unread > 0)
+                            Container(
+                              margin: const EdgeInsets.only(left: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: Text(
+                                '$unread',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -172,27 +185,31 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
           ),
           Expanded(
             child: PageView.builder(
-              key: ValueKey(tabs.length),
+              key: ValueKey(sources.length),
               controller: _pageController,
-              onPageChanged: (index) => setState(() => _index = index),
-              itemCount: tabs.length,
-              itemBuilder: (context, index) {
-                final Widget child;
-                if (index == 0) {
-                  child = _FeedView(onlyUnread: true, onRefresh: _refresh);
-                } else if (index == 1) {
-                  child = _FeedView(onlyUnread: false, onRefresh: _refresh);
-                } else {
-                  child = _GroupSourcesView(
-                    group: tabs[index],
-                    onOpen: _openSource,
-                    onAdd: _showAddSourceDialog,
-                    onRefresh: _refresh,
+              onPageChanged: (index) {
+                if (index > 0) {
+                  LearningSources.instance.markSourceRead(
+                    sources[index - 1].id,
                   );
                 }
+                setState(() => _index = index);
+              },
+              itemCount: tabs.length,
+              itemBuilder: (context, index) {
+                final child = index == 0
+                    ? _AllFeedView(
+                        onRefresh: _refresh,
+                        onOpenSource: _openSource,
+                      )
+                    : _SourceFeedView(
+                        source: sources[index - 1],
+                        onRefresh: _refresh,
+                        onOpenSource: _openSource,
+                      );
                 return LearningLocalizations(
-                  child: fw.Material(
-                    type: fw.MaterialType.transparency,
+                  child: Material(
+                    type: MaterialType.transparency,
                     child: child,
                   ),
                 );
@@ -204,23 +221,40 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
     });
   }
 
-  Future<void> _showGroupDialog() async {
-    final name = await askName(context, title: '新建分组');
-    if (name == null || name.trim().isEmpty) return;
-    LearningSources.instance.addGroup(name);
-    SmartDialog.showToast('已新建分组');
+  void showManageSheet() {
+    showLearningBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final source in _sources)
+              ListTile(
+                title: Text(source.name),
+                subtitle: Text(source.type.label),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () {
+                    LearningSources.instance.remove(source.id);
+                    Navigator.pop(sheetContext);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
-  Future<void> _showAddSourceDialog() async {
+  Future<void> showAddSourceDialog() async {
     var type = LearningSourceType.upArchive;
-    var group = LearningSources.instance.groups.first;
     final midCtr = TextEditingController();
     final refCtr = TextEditingController();
     final nameCtr = TextEditingController();
     final confirmed = await showLearningDialog<bool>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setState) => AlertDialog(
           title: const Text('添加订阅'),
           content: SingleChildScrollView(
             child: Column(
@@ -252,27 +286,16 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
                   controller: nameCtr,
                   decoration: const InputDecoration(labelText: '名称'),
                 ),
-                DropdownButtonFormField<String>(
-                  initialValue: group,
-                  decoration: const InputDecoration(labelText: '分组'),
-                  items: [
-                    for (final item in LearningSources.instance.groups)
-                      DropdownMenuItem(value: item, child: Text(item)),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) setState(() => group = value);
-                  },
-                ),
               ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('取消'),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('添加'),
             ),
           ],
@@ -290,31 +313,22 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
       refId = int.tryParse(refCtr.text.trim());
       if (refId == null) return;
     }
-    final target = LearningLibrary.instance.ensureFeedList();
     LearningSources.instance.add(
       type: type,
       mid: mid,
       refId: refId,
       name: nameCtr.text.trim().isEmpty ? type.label : nameCtr.text.trim(),
-      targetListId: target,
-      group: group,
+      targetListId: LearningLibrary.instance.ensureFeedList(),
     );
     SmartDialog.showToast('已添加，下拉刷新');
   }
 }
 
-class _FeedView extends StatefulWidget {
-  const _FeedView({required this.onlyUnread, required this.onRefresh});
+class _AllFeedView extends StatelessWidget {
+  const _AllFeedView({required this.onRefresh, required this.onOpenSource});
 
-  final bool onlyUnread;
   final Future<void> Function() onRefresh;
-
-  @override
-  State<_FeedView> createState() => _FeedViewState();
-}
-
-class _FeedViewState extends State<_FeedView> {
-  bool _bySource = true;
+  final void Function(LearningSource) onOpenSource;
 
   @override
   Widget build(BuildContext context) {
@@ -322,286 +336,114 @@ class _FeedViewState extends State<_FeedView> {
     final sources = LearningSources.instance;
     return Obx(() {
       final feedId = library.ensureFeedList();
-      var videos = library.find(feedId)?.videos ?? <LearningVideo>[];
-      if (widget.onlyUnread) {
-        videos = videos
-            .where((v) => sources.unreadBvids.contains(v.bvid))
-            .toList();
-      }
-      final grouped = <String, List<LearningVideo>>{};
-      for (final video in videos) {
-        final source = sources.find(video.sourceId ?? '');
-        final key = _bySource
-            ? (source?.name ?? '其他')
-            : (source?.group ?? LearningSources.defaultGroup);
-        (grouped[key] ??= <LearningVideo>[]).add(video);
-      }
+      final videos = List<LearningVideo>.from(
+        library.find(feedId)?.videos ?? const <LearningVideo>[],
+      )..sort((a, b) => b.addedAt.compareTo(a.addedAt));
 
-      final list = RefreshIndicator(
-        onRefresh: widget.onRefresh,
-        child: grouped.isEmpty
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: videos.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(
-                    height: 300,
-                    child: Center(
-                      child: Text(widget.onlyUnread ? '暂无新视频' : '暂无更新内容'),
-                    ),
-                  ),
+                children: const [
+                  SizedBox(height: 240, child: Center(child: Text('下拉刷新订阅'))),
                 ],
               )
             : ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: grouped.length,
-                itemBuilder: (context, sectionIndex) {
-                  final entry = grouped.entries.elementAt(sectionIndex);
-                  final source = _bySource
-                      ? sources.sources
-                            .where((s) => s.name == entry.key)
-                            .firstOrNull
-                      : null;
-                  final unread = source?.unreadBvids.length ?? 0;
+                itemCount: videos.length,
+                itemBuilder: (context, index) {
+                  final video = videos[index];
+                  final source = sources.find(video.sourceId ?? '');
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
-                        child: Row(
-                          children: [
-                            Text(
-                              entry.key,
-                              style: const TextStyle(fontSize: 14),
+                      if (source != null)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                          child: InkWell(
+                            onTap: () => onOpenSource(source),
+                            child: Text(
+                              source.name,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
-                            if (unread > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 6),
-                                child: Text(
-                                  '$unread 条新视频',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary,
-                                  ),
-                                ),
-                              ),
-                            const Spacer(),
-                            if (source != null)
-                              InkWell(
-                                onTap: () {
-                                  sources.markSourceRead(source.id);
-                                  Get.toNamed('/member?mid=${source.mid}');
-                                },
-                                child: Text(
-                                  '查看该 UP 全部 ›',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary,
-                                  ),
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
+                      LearningVideoCard(
+                        video: video,
+                        showNew: sources.unreadBvids.contains(video.bvid),
                       ),
-                      for (final video in entry.value)
-                        LearningVideoCard(
-                          video: video,
-                          showNew: sources.unreadBvids.contains(video.bvid),
-                        ),
                     ],
                   );
                 },
               ),
       );
-
-      if (widget.onlyUnread) return list;
-      return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  _bySource ? '按 UP 查看' : '按分组查看',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  tooltip: '切换分组 / UP',
-                  icon: const Icon(Icons.swap_horiz, size: 18),
-                  onPressed: () => setState(() => _bySource = !_bySource),
-                ),
-              ],
-            ),
-          ),
-          Expanded(child: list),
-        ],
-      );
     });
   }
 }
 
-class _GroupSourcesView extends StatelessWidget {
-  const _GroupSourcesView({
-    required this.group,
-    required this.onOpen,
-    required this.onAdd,
+class _SourceFeedView extends StatelessWidget {
+  const _SourceFeedView({
+    required this.source,
     required this.onRefresh,
+    required this.onOpenSource,
   });
 
-  final String group;
-  final void Function(LearningSource) onOpen;
-  final VoidCallback onAdd;
+  final LearningSource source;
   final Future<void> Function() onRefresh;
+  final void Function(LearningSource) onOpenSource;
 
   @override
   Widget build(BuildContext context) {
+    final library = LearningLibrary.instance;
+    final sources = LearningSources.instance;
     return Obx(() {
-      final sources = LearningSources.instance.sources
-          .where((s) => s.group == group)
-          .toList();
-      return Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: onRefresh,
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: sources.length + 1,
-              itemBuilder: (context, index) {
-                if (index == sources.length) {
-                  final real = sources.length;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: 80,
-                      top: real == 0 ? 160 : 10,
-                    ),
-                    child: Center(
+      final feedId = library.ensureFeedList();
+      final videos =
+          List<LearningVideo>.from(
+              library.find(feedId)?.videos ?? const <LearningVideo>[],
+            )
+            ..removeWhere((v) => v.sourceId != source.id)
+            ..sort((a, b) => b.addedAt.compareTo(a.addedAt));
+
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: videos.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                child: Row(
+                  children: [
+                    Text(source.name, style: const TextStyle(fontSize: 14)),
+                    const Spacer(),
+                    InkWell(
+                      onTap: () => onOpenSource(source),
                       child: Text(
-                        real == 0 ? '该分组还没有订阅' : '共 $real 个订阅',
+                        '查看该 UP 全部 ›',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ),
-                  );
-                }
-                final source = sources[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(source.name.characters.first),
-                  ),
-                  title: Text(source.name),
-                  subtitle: Text(source.type.label),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (source.unreadBvids.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${source.unreadBvids.length}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () async {
-                          final action = await showLearningBottomSheet<String>(
-                            context: context,
-                            builder: (sheetContext) => SafeArea(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  for (final g
-                                      in LearningSources.instance.groups)
-                                    ListTile(
-                                      title: Text('移到 $g'),
-                                      onTap: () => Navigator.pop(
-                                        sheetContext,
-                                        'move:$g',
-                                      ),
-                                    ),
-                                  ListTile(
-                                    title: const Text('删除'),
-                                    onTap: () =>
-                                        Navigator.pop(sheetContext, 'delete'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                          if (action == 'delete') {
-                            LearningSources.instance.remove(source.id);
-                          } else if (action?.startsWith('move:') == true) {
-                            LearningSources.instance.moveSource(
-                              source.id,
-                              action!.substring(5),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  onTap: () => onOpen(source),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: FloatingActionButton.small(
-              onPressed: onAdd,
-              child: const Icon(Icons.add),
-            ),
-          ),
-        ],
+                  ],
+                ),
+              );
+            }
+            final video = videos[index - 1];
+            return LearningVideoCard(
+              video: video,
+              showNew: sources.unreadBvids.contains(video.bvid),
+            );
+          },
+        ),
       );
     });
   }
-}
-
-Future<String?> askName(
-  BuildContext context, {
-  required String title,
-  String initial = '',
-}) {
-  final controller = TextEditingController(text: initial);
-  return showLearningDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: const InputDecoration(hintText: '名称'),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, controller.text),
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
 }
