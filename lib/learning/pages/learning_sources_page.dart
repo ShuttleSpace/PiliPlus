@@ -3,7 +3,7 @@ import 'package:PiliPlus/learning/learning_list.dart';
 import 'package:PiliPlus/learning/learning_refresh.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
-import 'package:PiliPlus/learning/widgets/learning_video_card.dart';
+import 'package:PiliPlus/learning/widgets/subscription_video_card.dart';
 import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -355,28 +355,12 @@ class _AllFeedView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final video = videos[index];
                   final source = sources.find(video.sourceId ?? '');
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (source != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-                          child: InkWell(
-                            onTap: () => onOpenSource(source),
-                            child: Text(
-                              source.name,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      LearningVideoCard(
-                        video: video,
-                        showNew: sources.unreadBvids.contains(video.bvid),
-                      ),
-                    ],
+                  if (source == null) return const SizedBox.shrink();
+                  return SubscriptionVideoCard(
+                    video: video,
+                    source: source,
+                    showNew: sources.unreadBvids.contains(video.bvid),
+                    onOpenSource: onOpenSource,
                   );
                 },
               ),
@@ -437,9 +421,11 @@ class _SourceFeedView extends StatelessWidget {
               );
             }
             final video = videos[index - 1];
-            return LearningVideoCard(
+            return SubscriptionVideoCard(
               video: video,
+              source: source,
               showNew: sources.unreadBvids.contains(video.bvid),
+              onOpenSource: onOpenSource,
             );
           },
         ),

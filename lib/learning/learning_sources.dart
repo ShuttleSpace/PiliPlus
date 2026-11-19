@@ -152,6 +152,17 @@ class LearningSources {
     _persist();
   }
 
+  DateTime? lastRefreshAtFor(String bvid) {
+    DateTime? latest;
+    for (final source in sources) {
+      final at = source.lastRefreshAt;
+      if (at != null && source.seenBvids.contains(bvid)) {
+        latest = latest == null || at.isAfter(latest) ? at : latest;
+      }
+    }
+    return latest;
+  }
+
   void markVideoRead(String bvid) {
     for (final source in sources) {
       source.unreadBvids.remove(bvid);

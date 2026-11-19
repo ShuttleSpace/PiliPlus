@@ -94,125 +94,132 @@ class _ListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final videos = list.videos;
-    return InkWell(
-      onTap: () => Get.to(() => LearningListDetailPage(listId: list.id)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Stack(
+      children: [
+        InkWell(
+          onTap: () => Get.to(() => LearningListDetailPage(listId: list.id)),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 56, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  list.name.isEmpty ? '未命名清单' : list.name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: theme.brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${videos.length} 个视频',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () async {
-                    final action = await showLearningBottomSheet<String>(
-                      context: context,
-                      builder: (sheetContext) => SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              title: const Text('重命名'),
-                              onTap: () =>
-                                  Navigator.pop(sheetContext, 'rename'),
-                            ),
-                            ListTile(
-                              title: const Text('删除'),
-                              onTap: () =>
-                                  Navigator.pop(sheetContext, 'delete'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                    if (!context.mounted) return;
-                    final library = LearningLibrary.instance;
-                    if (action == 'rename') {
-                      final name = await askName(
-                        context,
-                        title: '重命名',
-                        initial: list.name,
-                      );
-                      if (name != null) library.renameList(list.id, name);
-                    } else if (action == 'delete') {
-                      library.deleteList(list.id);
-                      SmartDialog.showToast('已删除');
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (videos.isEmpty)
-              Container(
-                height: 58,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '空清单',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
-              )
-            else
-              Row(
-                children: [
-                  for (final video in videos.take(3))
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: SizedBox(
-                            height: 58,
-                            child: video.cover.isEmpty
-                                ? Container(
-                                    color: theme
-                                        .colorScheme
-                                        .surfaceContainerHighest,
-                                  )
-                                : Image.network(
-                                    video.cover,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Container(
-                                      color: theme
-                                          .colorScheme
-                                          .surfaceContainerHighest,
-                                    ),
-                                  ),
-                          ),
-                        ),
+                Row(
+                  children: [
+                    Text(
+                      list.name.isEmpty ? '未命名清单' : list.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
                       ),
                     ),
-                ],
-              ),
-          ],
+                    const SizedBox(width: 6),
+                    Text(
+                      '${videos.length} 个视频',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (videos.isEmpty)
+                  Container(
+                    height: 58,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '空清单',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  )
+                else
+                  Row(
+                    children: [
+                      for (final video in videos.take(3))
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: SizedBox(
+                                height: 58,
+                                child: video.cover.isEmpty
+                                    ? Container(
+                                        color: theme
+                                            .colorScheme
+                                            .surfaceContainerHighest,
+                                      )
+                                    : Image.network(
+                                        video.cover,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Container(
+                                          color: theme
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
+        Positioned(
+          right: 6,
+          top: 4,
+          child: IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () async {
+              final action = await showLearningBottomSheet<String>(
+                context: context,
+                builder: (sheetContext) => Material(
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          title: const Text('重命名'),
+                          onTap: () => Navigator.pop(sheetContext, 'rename'),
+                        ),
+                        ListTile(
+                          title: const Text('删除'),
+                          onTap: () => Navigator.pop(sheetContext, 'delete'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+              if (!context.mounted) return;
+              final library = LearningLibrary.instance;
+              if (action == 'rename') {
+                final name = await askName(
+                  context,
+                  title: '重命名',
+                  initial: list.name,
+                );
+                if (name != null) library.renameList(list.id, name);
+              } else if (action == 'delete') {
+                library.deleteList(list.id);
+                SmartDialog.showToast('已删除');
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

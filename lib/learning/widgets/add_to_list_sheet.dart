@@ -11,7 +11,7 @@ void showAddToLearningListSheet(
 }) {
   final library = LearningLibrary.instance;
 
-  showModalBottomSheet<void>(
+  showLearningBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
