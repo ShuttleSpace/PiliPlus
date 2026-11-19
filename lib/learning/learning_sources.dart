@@ -88,6 +88,13 @@ class LearningSources {
     return source;
   }
 
+  void updateAvatar(String id, String? avatar) {
+    final source = find(id);
+    if (source == null || avatar == null || avatar.isEmpty) return;
+    source.avatar = avatar;
+    _persist();
+  }
+
   void remove(String id) {
     sources.removeWhere((source) => source.id == id);
     _persist();

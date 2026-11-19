@@ -18,6 +18,9 @@ class LearningRefreshItem {
     required this.cover,
     required this.cid,
     this.author = '',
+    this.avatar = '',
+    this.publishedAt,
+    this.publishedText = '',
   });
 
   final String bvid;
@@ -25,6 +28,9 @@ class LearningRefreshItem {
   final String cover;
   final int? cid;
   final String author;
+  final String avatar;
+  final DateTime? publishedAt;
+  final String publishedText;
 }
 
 /// 纯本地 diff，无网络依赖：只把新 bvid 写入订阅更新清单。
@@ -40,7 +46,7 @@ RefreshOutcome applyRefreshItems({
   for (final item in items) {
     if (item.bvid.isEmpty) continue;
     seen.add(item.bvid);
-    if (known.contains(item.bvid)) continue;
+    final isNew = !known.contains(item.bvid);
 
     final result = library.addVideo(
       listId: source.targetListId,
@@ -51,9 +57,13 @@ RefreshOutcome applyRefreshItems({
         cid: item.cid,
         sourceId: source.id,
         author: item.author,
+        publishedAt: item.publishedAt,
+        avatar: item.avatar,
+        publishedText: item.publishedText,
       ),
+      updateExisting: true,
     );
-    if (result == AddVideoResult.added) addedBvids.add(item.bvid);
+    if (isNew && result == AddVideoResult.added) addedBvids.add(item.bvid);
   }
 
   return RefreshOutcome(addedBvids.length, seen.toList(), addedBvids);

@@ -88,6 +88,11 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
     final targets = _currentSources
         .where((s) => onlyMid == null || s.mid == onlyMid)
         .toList();
+    if (targets.isEmpty) {
+      SmartDialog.showToast('还没有订阅源');
+      _refreshing = false;
+      return;
+    }
     var added = 0;
     for (final source in targets) {
       final outcome = await LearningRefresh.refresh(
@@ -104,9 +109,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
       added += outcome.added;
     }
     _refreshing = false;
-    if (targets.isEmpty) {
-      SmartDialog.showToast('还没有订阅源');
-    } else if (added > 0) {
+    if (added > 0) {
       SmartDialog.showToast('新增 $added 个视频');
     } else {
       SmartDialog.showToast('暂无更新');
@@ -308,6 +311,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
             constraints: const BoxConstraints(maxHeight: 400),
             child: ListView.builder(
               shrinkWrap: true,
+              padding: const EdgeInsets.only(bottom: 100),
               itemCount: _sources.length,
               itemBuilder: (context, index) {
                 final source = _sources[index];
@@ -354,19 +358,21 @@ class _FeedView extends StatelessWidget {
               library.find(feedId)?.videos ?? const <LearningVideo>[],
             )
             ..removeWhere((v) => !allowed.contains(v.sourceId))
-            ..sort((a, b) => b.addedAt.compareTo(a.addedAt));
+            ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
 
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: videos.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 100),
                 children: const [
                   SizedBox(height: 240, child: Center(child: Text('下拉刷新订阅'))),
                 ],
               )
             : ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 100),
                 itemCount: videos.length,
                 itemBuilder: (context, index) {
                   final video = videos[index];

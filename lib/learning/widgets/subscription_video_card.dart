@@ -3,6 +3,7 @@ import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/add_to_list_sheet.dart';
+import 'package:intl/intl.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -89,10 +90,11 @@ class SubscriptionVideoCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _time(
-                        LearningSources.instance.lastRefreshAtFor(video.bvid) ??
-                            video.addedAt,
-                      ),
+                      video.publishedText.isNotEmpty
+                          ? video.publishedText
+                          : DateFormat('yyyy-MM-dd HH:mm').format(
+                              video.publishedAt,
+                            ),
                       style: TextStyle(
                         fontSize: 11,
                         color: theme.colorScheme.outline,
@@ -119,13 +121,14 @@ class SubscriptionVideoCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  isCollection ? '合集新增' : '新投稿',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.outline,
+                if (showNew)
+                  Text(
+                    isCollection ? '合集新增' : '新投稿',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 7),
                 _VideoCard(video: video, showNew: showNew),
                 const SizedBox(height: 8),
@@ -304,13 +307,4 @@ class _Action extends StatelessWidget {
       ),
     );
   }
-}
-
-String _time(DateTime time) {
-  final diff = DateTime.now().difference(time);
-  if (diff.inMinutes < 1) return '刚刚';
-  if (diff.inHours < 1) return '${diff.inMinutes} 分钟前';
-  if (diff.inDays < 1) return '${diff.inHours} 小时前';
-  if (diff.inDays < 7) return '${diff.inDays} 天前';
-  return '${time.month}月${time.day}日';
 }

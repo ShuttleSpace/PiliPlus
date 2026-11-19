@@ -6,8 +6,12 @@ class LearningVideo {
     this.cid,
     this.sourceId,
     this.author = '',
+    this.avatar = '',
     DateTime? addedAt,
-  }) : addedAt = addedAt ?? DateTime.now();
+    DateTime? publishedAt,
+    this.publishedText = '',
+  }) : addedAt = addedAt ?? DateTime.now(),
+       publishedAt = publishedAt ?? addedAt ?? DateTime.now();
 
   final String bvid;
   final String title;
@@ -15,7 +19,10 @@ class LearningVideo {
   final int? cid;
   final String? sourceId;
   final String author;
+  final String avatar;
   final DateTime addedAt;
+  final DateTime publishedAt;
+  final String publishedText;
 
   Map<String, dynamic> toJson() => {
     'bvid': bvid,
@@ -24,7 +31,10 @@ class LearningVideo {
     'cid': cid,
     'sourceId': sourceId,
     'author': author,
+    'avatar': avatar,
     'addedAt': addedAt.millisecondsSinceEpoch,
+    'publishedAt': publishedAt.millisecondsSinceEpoch,
+    'publishedText': publishedText,
   };
 
   factory LearningVideo.fromJson(Map<String, dynamic> json) => LearningVideo(
@@ -35,8 +45,16 @@ class LearningVideo {
     sourceId: json['sourceId'] as String?,
     author: json['author'] as String? ?? '',
     addedAt: DateTime.fromMillisecondsSinceEpoch(
-      (json['addedAt'] as int?) ?? DateTime.now().millisecondsSinceEpoch,
+      (json['addedAt'] as int?) ??
+          (json['publishedAt'] as int?) ??
+          DateTime.now().millisecondsSinceEpoch,
     ),
+    publishedAt: DateTime.fromMillisecondsSinceEpoch(
+      (json['publishedAt'] as int?) ??
+          (json['addedAt'] as int?) ??
+          DateTime.now().millisecondsSinceEpoch,
+    ),
+    publishedText: json['publishedText'] as String? ?? '',
   );
 }
 

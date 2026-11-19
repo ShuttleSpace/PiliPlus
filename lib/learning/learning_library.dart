@@ -97,10 +97,18 @@ class LearningLibrary {
   AddVideoResult addVideo({
     required String listId,
     required LearningVideo video,
+    bool updateExisting = false,
   }) {
     final list = find(listId);
     if (list == null) return AddVideoResult.missingList;
-    if (list.contains(video.bvid)) return AddVideoResult.duplicate;
+    final index = list.videos.indexWhere((item) => item.bvid == video.bvid);
+    if (index != -1) {
+      if (!updateExisting) return AddVideoResult.duplicate;
+      list.videos[index] = video;
+      list.updatedAt = DateTime.now();
+      _persist();
+      return AddVideoResult.added;
+    }
 
     list.videos.add(video);
     list.updatedAt = DateTime.now();

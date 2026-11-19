@@ -3,8 +3,10 @@ import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/learning/learning_diff.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
+import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
+import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
 /// 只读取白名单接口：UP 投稿列表 / UP 自制合集列表。
@@ -33,6 +35,17 @@ class LearningRefresh {
     String? aid;
     int? next;
     String? error;
+    String? avatar = source.avatar;
+    if (avatar == null) {
+      final info = await MemberHttp.memberInfo(mid: source.mid);
+      avatar = switch (info) {
+        Success(:final response) => response.face,
+        _ => null,
+      };
+      if (avatar != null) {
+        LearningSources.instance.updateAvatar(source.id, avatar);
+      }
+    }
 
     for (var page = 0; page < maxPages; page++) {
       final result = await MemberHttp.spaceArchive(
@@ -61,6 +74,23 @@ class LearningRefresh {
                     cover: item.cover ?? '',
                     cid: item.cid,
                     author: item.owner.name ?? '',
+                    avatar: avatar ?? '',
+                    publishedAt: item.pubdate != null
+                        ? DateTime.fromMillisecondsSinceEpoch(
+                            item.pubdate! * 1000,
+                          )
+                        : item.season?.mtime is int
+                        ? DateTime.fromMillisecondsSinceEpoch(
+                            (item.season!.mtime as int) * 1000,
+                          )
+                        : null,
+                    publishedText: item.season?.mtime is int
+                        ? DateFormat('yyyy-MM-dd').format(
+                            DateTime.fromMillisecondsSinceEpoch(
+                              (item.season!.mtime as int) * 1000,
+                            ),
+                          )
+                        : item.publishTimeText ?? '',
                   ),
                 )
                 .where((item) => item.bvid.isNotEmpty),
