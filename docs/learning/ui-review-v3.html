@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>自主订阅学习客户端 · UI 设计稿 v2</title>
+<title>自主订阅学习客户端 · UI 设计稿 v3</title>
 <style>
   :root{
     --pink:#fb7299; --pink-soft:#ffe8ef; --ink:#18191c; --sub:#61666d;
@@ -116,8 +116,8 @@
 </head>
 <body>
 <header>
-  <h1>自主订阅学习客户端 · UI 设计稿 v2（层级修正）</h1>
-  <p><b>底部导航只有「首页 / 我的」</b>；首页顶部是「清单 / 订阅」两个 tab；订阅更新与分组都在订阅 tab 内；原首页算法推荐页与动态页移到「我的 → 设置 → 推荐流设置」。</p>
+  <h1>自主订阅学习客户端 · UI 设计稿 v3（刷新与入口收敛）</h1>
+  <p><b>底部导航只有「首页 / 我的」</b>；首页顶部是「清单 / 订阅」两个 tab；订阅更新与分组都在订阅 tab 内，统一<b>下拉刷新</b>；「我的 → 设置 → 推荐流设置」只放「原版首页 / 动态」两个入口，算法页回归未拆分的原版首页。</p>
 </header>
 <div class="legend">
   <span><i style="background:var(--pink)"></i>当前 tab / 主操作</span>
@@ -193,11 +193,11 @@
     <h2>③ 首页 · 订阅 tab · 更新页<small>默认落地在订阅 tab 内</small></h2>
     <div class="phone">
       <div class="status"><span>9:41</span><span>●●● ▰</span></div>
-      <div class="appbar"><div class="title">首页</div><div class="icon">＋</div><div class="icon">↻</div></div>
+      <div class="appbar"><div class="title">首页</div><div class="icon">＋</div></div>
       <div class="scroll">
         <div class="tabs primary"><div class="tab">清单</div><div class="tab on">订阅<span class="n">3</span></div></div>
         <div class="tabs secondary"><div class="tab on">更新<span class="n">3</span></div><div class="tab">全部</div><div class="tab">课程<span class="n">2</span></div><div class="tab">技术</div><div class="tab">+</div></div>
-        <div class="hint">刷新完成 · 新增 3 个视频，已按 UP 分组</div>
+        <div class="hint">下拉刷新完成 · 新增 3 个视频，已按 UP 分组</div>
         <div class="section">深度学习研究所 <small>2 条新视频</small><span class="more">查看该 UP 全部 ›</span></div>
         <div class="vcard">
           <div class="thumb t1">封面<small class="new">NEW</small><small class="dur">42:10</small></div>
@@ -221,7 +221,7 @@
       </div>
       <div class="nav"><a class="on"><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a><span class="glyph">☺</span>我的</a></div>
     </div>
-    <div class="annotation"><b>交互：</b>订阅 tab 内二级横向滑动（更新/全部/各分组），每个二级 tab 独立手动刷新；新视频按 bvid 去重、按 UP 分组；点「查看该 UP 全部」跳 UP 投稿列表。</div>
+    <div class="annotation"><b>交互：</b>订阅 tab 内二级横向滑动（更新/全部/各分组）；<b>无手动刷新按钮，统一下拉刷新</b>，当前页生效；新视频按 bvid 去重、按 UP 分组；点「查看该 UP 全部」跳 UP 投稿列表。</div>
   </div>
 
   <!-- 4 订阅-分组 -->
@@ -229,11 +229,11 @@
     <h2>④ 首页 · 订阅 tab · 分组页<small>订阅源管理</small></h2>
     <div class="phone">
       <div class="status"><span>9:41</span><span>●●● ▰</span></div>
-      <div class="appbar"><div class="title">首页</div><div class="icon">⚙</div><div class="icon">↻</div></div>
+      <div class="appbar"><div class="title">首页</div><div class="icon">⚙</div></div>
       <div class="scroll">
         <div class="tabs primary"><div class="tab">清单</div><div class="tab on">订阅<span class="n">3</span></div></div>
         <div class="tabs secondary"><div class="tab">更新<span class="n">3</span></div><div class="tab">全部</div><div class="tab on">课程<span class="n">2</span></div><div class="tab">技术</div><div class="tab">+</div></div>
-        <div class="hint">分组「课程」· 3 个订阅源 · 拖动排序 / 长按移组</div>
+        <div class="hint">分组「课程」· 3 个订阅源 · 下拉刷新 · 拖动排序 / 长按移组</div>
         <div class="src">
           <div class="ava">深度</div><div class="info"><b>深度学习研究所</b><p>UP 投稿 · 上次刷新 10:32</p></div>
           <span class="cnt">2</span><span class="chev">›</span>
@@ -294,7 +294,7 @@
         </div>
         <div class="settings">
           <div class="srow"><div class="sicon">⚙</div><div class="sinfo"><b>设置</b><p>推荐流设置、播放设置、账号</p></div><span class="chev">›</span></div>
-          <div class="srow"><div class="sicon">◐</div><div class="sinfo"><b>推荐流设置</b><p>首页（算法）、动态、热门入口</p></div><span class="chev">›</span></div>
+          <div class="srow"><div class="sicon">◐</div><div class="sinfo"><b>推荐流设置</b><p>原版首页、动态入口</p></div><span class="chev">›</span></div>
         </div>
       </div>
       <div class="nav"><a><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a class="on"><span class="glyph">☺</span>我的</a></div>
@@ -309,27 +309,22 @@
       <div class="status"><span>9:41</span><span>●●● ▰</span></div>
       <div class="appbar"><div class="icon">‹</div><div class="title">推荐流设置</div><div class="icon">⌕</div></div>
       <div class="scroll">
-        <div class="hint">以下都是官方入口，默认不出现在底部导航与首页 tab</div>
+        <div class="hint">只放两个官方入口，算法内容不进入我们的首页 tab</div>
         <div class="settings">
-          <div class="srow"><div class="sicon">⌂</div><div class="sinfo"><b>首页（算法推荐）</b><p>原首页 · 手动进入</p></div><span class="chev">进入 ›</span></div>
+          <div class="srow"><div class="sicon">⌂</div><div class="sinfo"><b>原版首页</b><p>恢复上游完整首页：推荐、直播、热门、分区、番剧</p></div><span class="chev">进入 ›</span></div>
           <div class="srow"><div class="sicon">◎</div><div class="sinfo"><b>动态</b><p>关注动态流 · 手动进入</p></div><span class="chev">进入 ›</span></div>
-          <div class="srow"><div class="sicon">♨</div><div class="sinfo"><b>热门 / 分区 / 番剧</b><p>官方发现页</p></div><span class="chev">进入 ›</span></div>
         </div>
-        <div class="section">干扰控制 <small>默认关闭</small></div>
-        <div class="settings">
-          <div class="srow"><div class="sicon">◐</div><div class="sinfo"><b>播放页相关推荐</b><p>看完视频不自动跳走</p></div><div class="switch"></div></div>
-          <div class="srow"><div class="sicon">↻</div><div class="sinfo"><b>自动连播</b><p>避免算法接管观看顺序</p></div><div class="switch"></div></div>
-        </div>
+        <div class="hint">推荐算法页不再单独拆成 /discovery，回到原版首页中；相关推荐/自动连播仍默认关闭，设置项保留在播放设置里。</div>
       </div>
       <div class="nav"><a><span class="glyph">⌂</span>首页<span class="dot">3</span></a><a class="on"><span class="glyph">☺</span>我的</a></div>
     </div>
-    <div class="annotation"><b>交互：</b>从「我的 → 设置 → 推荐流设置」进入；这里只做官方入口收纳，不向首页/订阅注入任何算法内容。</div>
+    <div class="annotation"><b>交互：</b>从「我的 → 设置 → 推荐流设置」进入，只有「原版首页 / 动态」两项；点原版首页进入<b>未拆分的完整上游首页</b>（含算法推荐 tab）。</div>
   </div>
 
 </div>
 
 <footer>
-  层级总结：<b>底部</b> = 首页 / 我的；<b>首页顶部</b> = 清单 / 订阅；<b>订阅内部</b> = 更新 / 全部 / 各分组（横向滑动、独立刷新）；<b>设置 → 推荐流设置</b> = 原首页、动态、热门等官方入口。所有视频列表统一使用搜索同款卡片。
+  层级总结：<b>底部</b> = 首页 / 我的；<b>首页顶部</b> = 清单 / 订阅；<b>订阅内部</b> = 更新 / 全部 / 各分组（横向滑动、下拉刷新）；<b>设置 → 推荐流设置</b> = 原版首页（含算法推荐）、动态。所有视频列表统一使用搜索同款卡片。
 </footer>
 </body>
 </html>
