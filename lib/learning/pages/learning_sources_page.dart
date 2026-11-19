@@ -42,11 +42,12 @@ class LearningSourcesView extends StatefulWidget {
 
 class _LearningSourcesViewState extends State<LearningSourcesView>
     with TickerProviderStateMixin {
+  late final String _feedId;
   late TabController _tabController = TabController(length: 2, vsync: this);
   String? _selectedSourceId;
   int? get _selectedMid =>
       _sources.firstWhereOrNull((s) => s.id == _selectedSourceId)?.mid;
-  final Set<int> _bootstrappedMids = <int>{};
+  final Set<String> _bootstrappedSourceIds = <String>{};
   bool _refreshing = false;
 
   List<LearningSource> get _sources =>
@@ -85,6 +86,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
   Future<void> _refresh({bool baseline = false, int? onlyMid}) async {
     if (_refreshing) return;
     _refreshing = true;
+    if (mounted) setState(() {});
     try {
       final targets = _currentSources
           .where((s) => onlyMid == null || s.mid == onlyMid)
@@ -113,6 +115,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
       SmartDialog.showToast('刷新失败: $e');
     } finally {
       _refreshing = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -126,10 +129,16 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
     setState(() {
       _tabController.index = _tabController.length - 1;
     });
-    if (_bootstrappedMids.add(source.mid)) {
+    if (_bootstrappedSourceIds.add(source.id)) {
       await _refresh(baseline: true, onlyMid: source.mid);
     }
-    LearningSources.instance.markSourceRead(source.id);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // 在 build 之外创建订阅更新清单，避免 Obx 构建期间通知其它 Obx。
+    _feedId = LearningLibrary.instance.ensureFeedList();
   }
 
   @override
@@ -270,12 +279,14 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
                     controller: _tabController,
                     children: [
                       _FeedView(
+                        feedId: _feedId,
                         sources: sources,
                         onRefresh: _refresh,
                         onOpenSource: _openSource,
                       ),
                       ...groups.map(
                         (group) => _FeedView(
+                          feedId: _feedId,
                           sources: sources
                               .where((s) => s.group == group)
                               .toList(),
@@ -285,6 +296,7 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
                       ),
                       Obx(
                         () => _FeedView(
+                          feedId: _feedId,
                           sources: sources
                               .where((s) => s.mid == _selectedMid)
                               .toList(),
@@ -338,11 +350,13 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
 
 class _FeedView extends StatelessWidget {
   const _FeedView({
+    required this.feedId,
     required this.sources,
     required this.onRefresh,
     required this.onOpenSource,
   });
 
+  final String feedId;
   final List<LearningSource> sources;
   final Future<void> Function({bool baseline, int? onlyMid}) onRefresh;
   final void Function(LearningSource) onOpenSource;
@@ -352,7 +366,6 @@ class _FeedView extends StatelessWidget {
     final library = LearningLibrary.instance;
     final allSources = LearningSources.instance;
     return Obx(() {
-      final feedId = library.ensureFeedList();
       final allowed = sources.map((s) => s.id).toSet();
       final videos =
           List<LearningVideo>.from(
