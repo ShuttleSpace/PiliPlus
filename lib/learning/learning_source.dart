@@ -1,16 +1,18 @@
-enum LearningSourceType { upArchive, upSeries, upSeason }
+enum LearningSourceType { upArchive, upSeries, upSeason, upLive }
 
 extension LearningSourceTypeExt on LearningSourceType {
   String get label => switch (this) {
     LearningSourceType.upArchive => 'UP 投稿',
     LearningSourceType.upSeries => '视频合集',
     LearningSourceType.upSeason => '系列合集',
+    LearningSourceType.upLive => '直播间',
   };
 
   String get idPrefix => switch (this) {
     LearningSourceType.upArchive => 'up',
     LearningSourceType.upSeries => 'series',
     LearningSourceType.upSeason => 'season',
+    LearningSourceType.upLive => 'live',
   };
 }
 
@@ -49,7 +51,11 @@ class LearningSource {
     required int mid,
     int? refId,
   }) {
-    final suffix = type == LearningSourceType.upArchive ? '' : ':$refId';
+    final suffix =
+        type == LearningSourceType.upArchive ||
+            type == LearningSourceType.upLive
+        ? ''
+        : ':$refId';
     return '${type.idPrefix}:$mid$suffix';
   }
 

@@ -72,8 +72,9 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
       _off = map['off'] ?? false;
     }
 
-    if (Platform.isAndroid) {
-      routeObserver.subscribe(this, Get.routing.route as GetPageRoute);
+    final route = Get.routing.route;
+    if (Platform.isAndroid && route is GetPageRoute) {
+      routeObserver.subscribe(this, route);
     }
   }
 

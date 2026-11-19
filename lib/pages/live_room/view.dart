@@ -12,6 +12,9 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
+import 'package:PiliPlus/learning/learning_source.dart';
+import 'package:PiliPlus/learning/learning_subscribe.dart';
+import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
@@ -694,6 +697,41 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     children: [
                       Icon(Icons.favorite_border, size: 19),
                       Text('粉丝团'),
+                    ],
+                  ),
+                ),
+              if (liveController.ruid case final mid?)
+                PopupMenuItem(
+                  onTap: () => subscribeLiveRoom(
+                    context: context,
+                    mid: mid,
+                    roomId: liveController.roomId,
+                    name: liveController
+                        .roomInfoH5
+                        .value
+                        ?.anchorInfo
+                        ?.baseInfo
+                        ?.uname,
+                    avatar: liveController
+                        .roomInfoH5
+                        .value
+                        ?.anchorInfo
+                        ?.baseInfo
+                        ?.face,
+                  ),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisSize: .min,
+                    children: [
+                      Obx(
+                        () => Icon(
+                          subscribeIcon(
+                            isSubscribed(LearningSourceType.upLive, mid),
+                          ),
+                          size: 19,
+                        ),
+                      ),
+                      const Text('订阅直播间'),
                     ],
                   ),
                 ),

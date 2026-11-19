@@ -319,6 +319,13 @@ List<SettingsModel> get playSettings => [
     defaultVal: true,
   ),
   const SwitchModel(
+    title: '待阅播放前询问恢复进度',
+    subtitle: '开启后播放待阅视频前询问是否继续上次的进度（含分 P）',
+    leading: Icon(Icons.restore_outlined),
+    setKey: SettingBoxKey.learningResumePrompt,
+    defaultVal: false,
+  ),
+  const SwitchModel(
     title: '延长播放控件显示时间',
     subtitle: '开启后延长至30秒，便于屏幕阅读器滑动切换控件焦点',
     leading: Icon(Icons.timer_outlined),

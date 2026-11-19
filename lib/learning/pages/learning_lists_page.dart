@@ -109,9 +109,7 @@ class _ListCard extends StatelessWidget {
                       list.name.isEmpty ? '未命名清单' : list.name,
                       style: TextStyle(
                         fontSize: 14,
-                        color: theme.brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(width: 6),

@@ -57,3 +57,23 @@ bool isSubscribed(LearningSourceType type, int mid, {int? refId}) =>
       LearningSource.makeId(type: type, mid: mid, refId: refId),
     ) !=
     null;
+
+/// 直播间右上角菜单复用同一套订阅弹窗。
+Future<void> subscribeLiveRoom({
+  required BuildContext context,
+  required int mid,
+  required int roomId,
+  String? name,
+  String? avatar,
+}) => showSubscribeSheet(
+  context: context,
+  source: LearningSource(
+    id: LearningSource.makeId(type: LearningSourceType.upLive, mid: mid),
+    type: LearningSourceType.upLive,
+    mid: mid,
+    refId: roomId,
+    name: (name ?? '').trim().isEmpty ? '直播间 $roomId' : name!.trim(),
+    avatar: avatar,
+    targetListId: LearningLibrary.instance.ensureFeedList(),
+  ),
+);

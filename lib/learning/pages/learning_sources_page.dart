@@ -219,8 +219,9 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
                                                           0,
                                                           1,
                                                         ),
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
+                                                  style: TextStyle(
+                                                    color:
+                                                        colorScheme.onPrimary,
                                                     fontSize: 14,
                                                   ),
                                                 ),

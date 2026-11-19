@@ -10,7 +10,9 @@ mixin RouteAwareMixin<T extends StatefulWidget> on State<T>, RouteAware {
   @override
   void initState() {
     super.initState();
-    routeObserver.subscribe(this, Get.routing.route as GetPageRoute);
+    if (Get.routing.route case final GetPageRoute route) {
+      routeObserver.subscribe(this, route);
+    }
   }
 
   @override

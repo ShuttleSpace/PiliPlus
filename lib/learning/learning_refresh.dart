@@ -21,6 +21,7 @@ class LearningRefresh {
         LearningSourceType.upArchive => ContributeType.video,
         LearningSourceType.upSeries => ContributeType.series,
         LearningSourceType.upSeason => ContributeType.season,
+        LearningSourceType.upLive => throw UnsupportedError('直播间不从投稿列表刷新'),
       };
 
   /// [baseline] 为 true 时把拉取到的全部视频作为已知项，不打新增 badge。
@@ -29,6 +30,9 @@ class LearningRefresh {
     required LearningLibrary library,
     bool baseline = false,
   }) async {
+    if (source.type == LearningSourceType.upLive) {
+      return const RefreshOutcome(0, <String>[], <String>[]);
+    }
     final isArchive = source.type == LearningSourceType.upArchive;
     final items = <LearningRefreshItem>[];
     String? aid;
