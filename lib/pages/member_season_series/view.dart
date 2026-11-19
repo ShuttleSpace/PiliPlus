@@ -3,7 +3,9 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_subscribe.dart';
+import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space_season_series/season.dart'
     show SpaceSsModel;
@@ -103,17 +105,30 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                       Positioned(
                         top: 2,
                         right: 2,
-                        child: IconButton(
-                          tooltip: '订阅此合集',
-                          icon: const Icon(Icons.playlist_add_check_circle),
-                          color: Theme.of(context).colorScheme.primary,
-                          onPressed: () => subscribeCollection(
-                            mid: widget.mid,
-                            seasonId: seasonId,
-                            seriesId: seriesId,
-                            name: meta?.name,
-                          ),
-                        ),
+                        child: Obx(() {
+                          final type = isSeason
+                              ? LearningSourceType.upSeason
+                              : LearningSourceType.upSeries;
+                          final subscribed = isSubscribed(
+                            type,
+                            widget.mid,
+                            refId: seasonId ?? seriesId,
+                          );
+                          return IconButton(
+                            tooltip: subscribed ? '已订阅' : '订阅此合集',
+                            icon: Icon(subscribeIcon(subscribed)),
+                            color: subscribed
+                                ? Theme.of(context).colorScheme.outline
+                                : Theme.of(context).colorScheme.primary,
+                            onPressed: () => subscribeCollection(
+                              context: context,
+                              mid: widget.mid,
+                              seasonId: seasonId,
+                              seriesId: seriesId,
+                              name: meta?.name,
+                            ),
+                          );
+                        }),
                       ),
                     ],
                   );

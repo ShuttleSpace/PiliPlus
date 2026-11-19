@@ -1,58 +1,59 @@
 import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
+import 'package:flutter/material.dart';
 
-void subscribeUpArchive({required int mid, String? name}) {
-  final sources = LearningSources.instance;
-  final id = LearningSource.makeId(
-    type: LearningSourceType.upArchive,
-    mid: mid,
-  );
-  if (sources.find(id) != null) {
-    SmartDialog.showToast('已订阅该 UP 的投稿');
-    return;
-  }
-  final targetListId = LearningLibrary.instance.ensureFeedList();
-  sources.add(
+Future<void> subscribeUpArchive({
+  required BuildContext context,
+  required int mid,
+  String? name,
+  String? avatar,
+}) => showSubscribeSheet(
+  context: context,
+  source: LearningSource(
+    id: LearningSource.makeId(type: LearningSourceType.upArchive, mid: mid),
     type: LearningSourceType.upArchive,
     mid: mid,
     name: (name ?? '').trim().isEmpty ? 'UP $mid' : name!.trim(),
-    targetListId: targetListId,
-  );
-  SmartDialog.showToast('已订阅，去「订阅」页手动刷新');
-}
+    avatar: avatar,
+    targetListId: LearningLibrary.instance.ensureFeedList(),
+  ),
+);
 
-void subscribeCollection({
+Future<void> subscribeCollection({
+  required BuildContext context,
   required int mid,
   int? seasonId,
   int? seriesId,
   String? name,
-}) {
+}) async {
   final isSeason = seasonId != null;
   final id = isSeason ? seasonId : seriesId;
   if (id == null) return;
-
-  final type = isSeason
-      ? LearningSourceType.upSeason
-      : LearningSourceType.upSeries;
-  final sources = LearningSources.instance;
-  final sourceId = LearningSource.makeId(
-    type: type,
-    mid: mid,
-    refId: id,
+  await showSubscribeSheet(
+    context: context,
+    source: LearningSource(
+      id: LearningSource.makeId(
+        type: isSeason
+            ? LearningSourceType.upSeason
+            : LearningSourceType.upSeries,
+        mid: mid,
+        refId: id,
+      ),
+      type: isSeason
+          ? LearningSourceType.upSeason
+          : LearningSourceType.upSeries,
+      mid: mid,
+      refId: id,
+      name: (name ?? '').trim().isEmpty ? '合集 $id' : name!.trim(),
+      targetListId: LearningLibrary.instance.ensureFeedList(),
+    ),
   );
-  if (sources.find(sourceId) != null) {
-    SmartDialog.showToast('已订阅该合集');
-    return;
-  }
-  final targetListId = LearningLibrary.instance.ensureFeedList();
-  sources.add(
-    type: type,
-    mid: mid,
-    refId: id,
-    name: (name ?? '').trim().isEmpty ? '合集 $id' : name!.trim(),
-    targetListId: targetListId,
-  );
-  SmartDialog.showToast('已订阅，去「订阅」页手动刷新');
 }
+
+bool isSubscribed(LearningSourceType type, int mid, {int? refId}) =>
+    LearningSources.instance.find(
+      LearningSource.makeId(type: type, mid: mid, refId: refId),
+    ) !=
+    null;

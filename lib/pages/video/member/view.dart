@@ -11,7 +11,9 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_subscribe.dart';
+import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
@@ -277,17 +279,26 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
         children: [
           _buildAvatar(memberInfoModel.face!),
           Expanded(child: _buildInfo(memberInfoModel)),
-          IconButton(
-            tooltip: '订阅此 UP 的投稿',
-            icon: const Icon(Icons.playlist_add_check_circle_outlined),
-            color: colorScheme.primary,
-            onPressed: () {
-              final mid = int.tryParse(widget.mid.toString());
-              if (mid != null) {
-                subscribeUpArchive(mid: mid, name: memberInfoModel.name);
-              }
-            },
-          ),
+          Obx(() {
+            final mid = int.tryParse(widget.mid.toString());
+            final subscribed =
+                mid != null && isSubscribed(LearningSourceType.upArchive, mid);
+            return IconButton(
+              tooltip: subscribed ? '已订阅此 UP' : '订阅此 UP 的投稿',
+              icon: Icon(subscribeIcon(subscribed)),
+              color: subscribed ? colorScheme.outline : colorScheme.primary,
+              onPressed: () {
+                if (mid != null) {
+                  subscribeUpArchive(
+                    context: context,
+                    mid: mid,
+                    name: memberInfoModel.name,
+                    avatar: memberInfoModel.face,
+                  );
+                }
+              },
+            );
+          }),
         ],
       ),
     );

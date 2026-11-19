@@ -22,6 +22,7 @@ class LearningSource {
     required this.name,
     required this.targetListId,
     this.refId,
+    this.avatar,
     this.group = '未分组',
     List<String>? seenBvids,
     List<String>? unreadBvids,
@@ -36,6 +37,7 @@ class LearningSource {
   final int? refId;
   final String name;
   final String targetListId;
+  String? avatar;
   String group;
   final List<String> seenBvids;
   final List<String> unreadBvids;
@@ -58,6 +60,7 @@ class LearningSource {
     'refId': refId,
     'name': name,
     'targetListId': targetListId,
+    'avatar': avatar,
     'group': group,
     'seenBvids': seenBvids,
     'unreadBvids': unreadBvids,
@@ -72,6 +75,7 @@ class LearningSource {
     refId: json['refId'] as int?,
     name: json['name'] as String? ?? '未命名订阅',
     targetListId: json['targetListId'] as String,
+    avatar: json['avatar'] as String?,
     group: json['group'] as String? ?? '未分组',
     seenBvids:
         (json['seenBvids'] as List?)?.map((item) => item.toString()).toList() ??

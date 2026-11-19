@@ -18,7 +18,7 @@ import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_list.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_subscribe.dart';
-import 'package:PiliPlus/learning/learning_sources.dart';
+import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
 import 'package:PiliPlus/learning/widgets/add_to_list_sheet.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -539,20 +539,19 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               final mid = owner?.mid;
               final subscribed =
                   mid != null &&
-                  LearningSources.instance.find(
-                        LearningSource.makeId(
-                          type: LearningSourceType.upArchive,
-                          mid: mid,
-                        ),
-                      ) !=
-                      null;
+                  isSubscribed(LearningSourceType.upArchive, mid);
               return ActionItem(
-                icon: const Icon(Icons.playlist_add_check_circle_outlined),
-                selectIcon: const Icon(Icons.playlist_add_check_circle),
+                icon: Icon(subscribeIcon(false)),
+                selectIcon: Icon(subscribeIcon(true)),
                 selectStatus: subscribed,
                 onTap: () {
                   if (mid == null) return;
-                  subscribeUpArchive(mid: mid, name: owner?.name);
+                  subscribeUpArchive(
+                    context: context,
+                    mid: mid,
+                    name: owner?.name,
+                    avatar: owner?.face,
+                  );
                 },
                 semanticsLabel: '订阅此 UP 的投稿',
                 text: '订阅',

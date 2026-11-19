@@ -3,6 +3,8 @@ import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/add_to_list_sheet.dart';
+import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -48,10 +50,18 @@ class SubscriptionVideoCard extends StatelessWidget {
                   : theme.colorScheme.primary,
             ),
             alignment: Alignment.center,
-            child: Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: source.avatar != null
+                ? NetworkImgLayer(
+                    src: source.avatar,
+                    width: 38,
+                    height: 38,
+                    type: ImageType.avatar,
+                  )
+                : Text(
+                    label,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -214,7 +224,7 @@ class _VideoCard extends StatelessWidget {
                       ),
                     if (showNew)
                       Positioned(
-                        left: 4,
+                        right: 4,
                         top: 4,
                         child: Container(
                           padding: const EdgeInsets.symmetric(

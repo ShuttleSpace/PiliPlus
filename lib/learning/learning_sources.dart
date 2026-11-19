@@ -68,6 +68,7 @@ class LearningSources {
     int? refId,
     required String name,
     required String targetListId,
+    String? avatar,
     String group = defaultGroup,
   }) {
     final finalGroup = group.trim().isEmpty ? defaultGroup : group.trim();
@@ -78,6 +79,7 @@ class LearningSources {
       refId: refId,
       name: name.trim().isEmpty ? '未命名订阅' : name.trim(),
       targetListId: targetListId,
+      avatar: avatar,
       group: finalGroup,
     );
     sources.add(source);

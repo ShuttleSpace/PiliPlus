@@ -4,13 +4,16 @@ import 'package:PiliPlus/learning/learning_diff.dart';
 import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
-import 'package:PiliPlus/models/common/member/archive_sort_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
+import 'package:collection/collection.dart';
 
 /// 只读取白名单接口：UP 投稿列表 / UP 自制合集列表。
 /// diff 与写入清单全部在本地完成。
 class LearningRefresh {
   LearningRefresh._();
+
+  /// 与官方 space/archive/cursor 接口一致：视频用 aid 游标，合集用 next 游标。
+  static const int maxPages = 50;
 
   static ContributeType _contributeType(LearningSourceType type) =>
       switch (type) {
@@ -19,35 +22,39 @@ class LearningRefresh {
         LearningSourceType.upSeason => ContributeType.season,
       };
 
+  /// [baseline] 为 true 时把拉取到的全部视频作为已知项，不打新增 badge。
   static Future<RefreshOutcome> refresh({
     required LearningSource source,
     required LearningLibrary library,
+    bool baseline = false,
   }) async {
-    final result = await MemberHttp.spaceArchive(
-      type: _contributeType(source.type),
-      mid: source.mid,
-      seriesId: source.type == LearningSourceType.upSeries
-          ? source.refId
-          : null,
-      seasonId: source.type == LearningSourceType.upSeason
-          ? source.refId
-          : null,
-      order: source.type == LearningSourceType.upArchive
-          ? ArchiveOrderTypeApp.pubdate
-          : null,
-      sort: source.type == LearningSourceType.upArchive
-          ? ArchiveSortTypeApp.desc
-          : null,
-      pn: 1,
-    );
+    final isArchive = source.type == LearningSourceType.upArchive;
+    final items = <LearningRefreshItem>[];
+    String? aid;
+    int? next;
+    String? error;
 
-    return switch (result) {
-      Success(:final response) => applyRefreshItems(
-        source: source,
-        library: library,
-        items:
-            response.item
-                ?.map(
+    for (var page = 0; page < maxPages; page++) {
+      final result = await MemberHttp.spaceArchive(
+        type: _contributeType(source.type),
+        mid: source.mid,
+        aid: isArchive ? aid : null,
+        seriesId: source.type == LearningSourceType.upSeries
+            ? source.refId
+            : null,
+        seasonId: source.type == LearningSourceType.upSeason
+            ? source.refId
+            : null,
+        order: isArchive ? ArchiveOrderTypeApp.pubdate : null,
+        sort: null,
+        next: isArchive ? null : next,
+      );
+      switch (result) {
+        case Success(:final response):
+          final pageItems = response.item ?? const [];
+          items.addAll(
+            pageItems
+                .map(
                   (item) => LearningRefreshItem(
                     bvid: item.bvid ?? '',
                     title: item.title,
@@ -56,21 +63,64 @@ class LearningRefresh {
                     author: item.owner.name ?? '',
                   ),
                 )
-                .toList() ??
-            const [],
-      ),
-      Error(:final errMsg) => RefreshOutcome(
-        0,
-        source.seenBvids,
-        const <String>[],
-        errMsg ?? '刷新失败',
-      ),
-      Loading() => RefreshOutcome(
-        0,
-        source.seenBvids,
-        const <String>[],
-        '刷新中',
-      ),
-    };
+                .where((item) => item.bvid.isNotEmpty),
+          );
+          final hasNext = response.hasNext != false;
+          if (isArchive) {
+            final lastAid = pageItems.lastOrNull?.param;
+            if (!hasNext || lastAid == null || lastAid == aid) {
+              return _finish(
+                source: source,
+                library: library,
+                items: items,
+                baseline: baseline,
+              );
+            }
+            aid = lastAid;
+          } else {
+            final nextPage = response.next;
+            if (!hasNext ||
+                nextPage == null ||
+                nextPage == 0 ||
+                nextPage == next) {
+              return _finish(
+                source: source,
+                library: library,
+                items: items,
+                baseline: baseline,
+              );
+            }
+            next = nextPage;
+          }
+        case Error(:final errMsg):
+          error = errMsg ?? '刷新失败';
+        case Loading():
+          error = '刷新中';
+      }
+      if (error != null) break;
+    }
+
+    // 某页失败也保留已拉到的视频，不整批丢弃。
+    return _finish(
+      source: source,
+      library: library,
+      items: items,
+      baseline: baseline,
+    );
+  }
+
+  static RefreshOutcome _finish({
+    required LearningSource source,
+    required LearningLibrary library,
+    required List<LearningRefreshItem> items,
+    required bool baseline,
+  }) {
+    final outcome = applyRefreshItems(
+      source: source,
+      library: library,
+      items: items,
+    );
+    if (!baseline) return outcome;
+    return RefreshOutcome(outcome.added, outcome.seenBvids, const <String>[]);
   }
 }
