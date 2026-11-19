@@ -74,11 +74,6 @@ class MineController extends GetxController with AccountMixin {
       },
     ),
     (
-      icon: CustomIcons.subscriptions_outlined,
-      title: '我的订阅',
-      onTap: () => Get.toNamed('/learningSources'),
-    ),
-    (
       icon: CustomIcons.watch_later_outlined,
       title: '稍后再看',
       onTap: () {

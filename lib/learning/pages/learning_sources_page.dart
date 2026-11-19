@@ -5,6 +5,7 @@ import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/subscription_video_card.dart';
 import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -21,7 +22,8 @@ class LearningSourcesPage extends StatelessWidget {
   );
 }
 
-/// 首页「订阅」tab：全部（时间线）+ 每个 UP / 合集一个横向 tab。
+/// 首页「订阅」tab，布局与官方「动态」一致：顶部 全部/分组/UP，
+/// 左侧固定的已订阅 UP 列表，点头像切到该 UP 的投稿。
 class LearningSourcesView extends StatefulWidget {
   const LearningSourcesView({
     super.key,
@@ -36,23 +38,52 @@ class LearningSourcesView extends StatefulWidget {
   State<LearningSourcesView> createState() => _LearningSourcesViewState();
 }
 
-class _LearningSourcesViewState extends State<LearningSourcesView> {
-  final _pageController = PageController();
-  int _index = 0;
+class _LearningSourcesViewState extends State<LearningSourcesView>
+    with TickerProviderStateMixin {
+  late TabController _tabController = TabController(length: 2, vsync: this);
+  int _selectedMid = -1;
   bool _refreshing = false;
 
   List<LearningSource> get _sources =>
       LearningSources.instance.sources.toList();
 
+  List<String> get _groups => LearningSources.instance.groups
+      .where(
+        (g) =>
+            g != LearningSources.defaultGroup &&
+            _sources.any((s) => s.group == g),
+      )
+      .toList();
+
+  void _syncTabs(int length) {
+    if (_tabController.length == length) return;
+    final index = _tabController.index;
+    _tabController.dispose();
+    _tabController = TabController(
+      length: length,
+      vsync: this,
+      initialIndex: index.clamp(0, length - 1),
+    );
+  }
+
+  String get _activeGroup {
+    final index = _tabController.index;
+    return index > 0 && index <= _groups.length ? _groups[index - 1] : '';
+  }
+
+  List<LearningSource> get _currentSources {
+    final index = _tabController.index;
+    if (index == 0) return _sources;
+    if (index == _tabController.length - 1) {
+      return _sources.where((s) => s.mid == _selectedMid).toList();
+    }
+    return _sources.where((s) => s.group == _activeGroup).toList();
+  }
+
   Future<void> _refresh() async {
     if (_refreshing) return;
     _refreshing = true;
-    final sources = _sources;
-    final targets = _index == 0
-        ? sources
-        : (_index - 1 < sources.length
-              ? [sources[_index - 1]]
-              : <LearningSource>[]);
+    final targets = _currentSources;
     var added = 0;
     for (final source in targets) {
       final outcome = await LearningRefresh.refresh(
@@ -82,138 +113,178 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
     Get.toNamed('/member?mid=${source.mid}');
   }
 
+  void _selectUp(int mid) {
+    _selectedMid = mid;
+    setState(() {
+      _tabController.index = _tabController.length - 1;
+    });
+    final source = _sources.firstWhereOrNull((s) => s.mid == mid);
+    if (source != null) LearningSources.instance.markSourceRead(source.id);
+  }
+
   @override
   void dispose() {
-    _pageController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final sources = _sources;
-      final tabs = <String>['全部', ...sources.map((s) => s.name)];
-      if (_index >= tabs.length) _index = tabs.length - 1;
-      if (sources.isEmpty && _index != 0) _index = 0;
+      final groups = _groups;
+      _syncTabs(groups.length + 2);
+      final tabs = <String>['全部', ...groups, 'UP'];
+      final colorScheme = Theme.of(context).colorScheme;
+      final upSources = _sources
+          .groupFoldBy<int, LearningSource>(
+            (s) => s.mid,
+            (previous, source) =>
+                previous ?? source, // shortcut: 同一 UP 的多个合集只显示一个头像
+          )
+          .values
+          .toList();
 
       return Column(
         children: [
-          SizedBox(
-            height: 44,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: tabs.length + 2,
-              itemBuilder: (context, index) {
-                if (index == tabs.length) {
-                  return Align(
-                    child: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: showAddSourceDialog,
-                    ),
-                  );
-                }
-                if (index == tabs.length + 1) {
-                  return Align(
-                    child: IconButton(
-                      icon: const Icon(Icons.manage_accounts_outlined),
-                      onPressed: showManageSheet,
-                    ),
-                  );
-                }
-                final unread = index == 0
-                    ? LearningSources.instance.totalUnread
-                    : sources[index - 1].unreadBvids.length;
-                return Align(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: InkWell(
-                      onTap: () {
-                        if (index > 0) {
-                          LearningSources.instance.markSourceRead(
-                            sources[index - 1].id,
-                          );
-                        }
-                        setState(() => _index = index);
-                        _pageController.jumpToPage(index);
-                      },
-                      child: Row(
-                        children: [
-                          Text(
-                            tabs[index],
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: index == _index
-                                  ? FontWeight.bold
-                                  : null,
-                              color: index == _index
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).brightness ==
-                                        Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                          if (unread > 0)
-                            Container(
-                              margin: const EdgeInsets.only(left: 4),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                borderRadius: BorderRadius.circular(9),
-                              ),
-                              child: Text(
-                                '$unread',
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  dividerHeight: 0,
+                  indicatorColor: colorScheme.primary,
+                  labelColor: colorScheme.primary,
+                  unselectedLabelColor: colorScheme.onSurface,
+                  labelStyle: const TextStyle(fontSize: 13),
+                  tabs: [for (final tab in tabs) Tab(text: tab)],
+                ),
+              ),
+              IconButton(
+                tooltip: '添加订阅',
+                icon: const Icon(Icons.add),
+                onPressed: showAddSourceDialog,
+              ),
+              IconButton(
+                tooltip: '管理订阅',
+                icon: const Icon(Icons.manage_accounts_outlined),
+                onPressed: showManageSheet,
+              ),
+            ],
           ),
           Expanded(
-            child: PageView.builder(
-              key: ValueKey(sources.length),
-              controller: _pageController,
-              onPageChanged: (index) {
-                if (index > 0) {
-                  LearningSources.instance.markSourceRead(
-                    sources[index - 1].id,
-                  );
-                }
-                setState(() => _index = index);
-              },
-              itemCount: tabs.length,
-              itemBuilder: (context, index) {
-                final child = index == 0
-                    ? _AllFeedView(
-                        onRefresh: _refresh,
-                        onOpenSource: _openSource,
-                      )
-                    : _SourceFeedView(
-                        source: sources[index - 1],
-                        onRefresh: _refresh,
-                        onOpenSource: _openSource,
-                      );
-                return LearningLocalizations(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 64,
                   child: Material(
                     type: MaterialType.transparency,
-                    child: child,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: upSources.length,
+                      itemBuilder: (context, index) {
+                        final source = upSources[index];
+                        final selected = _selectedMid == source.mid;
+                        final unread = upSources
+                            .where((s) => s.mid == source.mid)
+                            .fold<int>(
+                              0,
+                              (sum, s) => sum + s.unreadBvids.length,
+                            );
+                        return SizedBox(
+                          height: 76,
+                          child: InkWell(
+                            onTap: () => _selectUp(source.mid),
+                            child: Opacity(
+                              opacity: selected ? 1 : 0.6,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 19,
+                                        backgroundColor: colorScheme.primary,
+                                        child: Text(
+                                          source.name.isEmpty
+                                              ? '订'
+                                              : source.name.substring(0, 1),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                      if (unread > 0)
+                                        const Positioned(
+                                          right: -2,
+                                          top: -2,
+                                          child: Badge(
+                                            smallSize: 8,
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: Text(
+                                      source.name,
+                                      maxLines: 2,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: selected
+                                            ? colorScheme.primary
+                                            : colorScheme.outline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                );
-              },
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _FeedView(
+                        sources: _sources,
+                        onRefresh: _refresh,
+                        onOpenSource: _openSource,
+                      ),
+                      ...groups.map(
+                        (group) => _FeedView(
+                          sources: _sources
+                              .where((s) => s.group == group)
+                              .toList(),
+                          onRefresh: _refresh,
+                          onOpenSource: _openSource,
+                        ),
+                      ),
+                      _FeedView(
+                        sources: _sources
+                            .where((s) => s.mid == _selectedMid)
+                            .toList(),
+                        onRefresh: _refresh,
+                        onOpenSource: _openSource,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -324,21 +395,30 @@ class _LearningSourcesViewState extends State<LearningSourcesView> {
   }
 }
 
-class _AllFeedView extends StatelessWidget {
-  const _AllFeedView({required this.onRefresh, required this.onOpenSource});
+class _FeedView extends StatelessWidget {
+  const _FeedView({
+    required this.sources,
+    required this.onRefresh,
+    required this.onOpenSource,
+  });
 
+  final List<LearningSource> sources;
   final Future<void> Function() onRefresh;
   final void Function(LearningSource) onOpenSource;
 
   @override
   Widget build(BuildContext context) {
     final library = LearningLibrary.instance;
-    final sources = LearningSources.instance;
+    final allSources = LearningSources.instance;
     return Obx(() {
       final feedId = library.ensureFeedList();
-      final videos = List<LearningVideo>.from(
-        library.find(feedId)?.videos ?? const <LearningVideo>[],
-      )..sort((a, b) => b.addedAt.compareTo(a.addedAt));
+      final allowed = sources.map((s) => s.id).toSet();
+      final videos =
+          List<LearningVideo>.from(
+              library.find(feedId)?.videos ?? const <LearningVideo>[],
+            )
+            ..removeWhere((v) => !allowed.contains(v.sourceId))
+            ..sort((a, b) => b.addedAt.compareTo(a.addedAt));
 
       return RefreshIndicator(
         onRefresh: onRefresh,
@@ -354,81 +434,16 @@ class _AllFeedView extends StatelessWidget {
                 itemCount: videos.length,
                 itemBuilder: (context, index) {
                   final video = videos[index];
-                  final source = sources.find(video.sourceId ?? '');
+                  final source = allSources.find(video.sourceId ?? '');
                   if (source == null) return const SizedBox.shrink();
                   return SubscriptionVideoCard(
                     video: video,
                     source: source,
-                    showNew: sources.unreadBvids.contains(video.bvid),
+                    showNew: allSources.unreadBvids.contains(video.bvid),
                     onOpenSource: onOpenSource,
                   );
                 },
               ),
-      );
-    });
-  }
-}
-
-class _SourceFeedView extends StatelessWidget {
-  const _SourceFeedView({
-    required this.source,
-    required this.onRefresh,
-    required this.onOpenSource,
-  });
-
-  final LearningSource source;
-  final Future<void> Function() onRefresh;
-  final void Function(LearningSource) onOpenSource;
-
-  @override
-  Widget build(BuildContext context) {
-    final library = LearningLibrary.instance;
-    final sources = LearningSources.instance;
-    return Obx(() {
-      final feedId = library.ensureFeedList();
-      final videos =
-          List<LearningVideo>.from(
-              library.find(feedId)?.videos ?? const <LearningVideo>[],
-            )
-            ..removeWhere((v) => v.sourceId != source.id)
-            ..sort((a, b) => b.addedAt.compareTo(a.addedAt));
-
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: videos.length + 1,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
-                child: Row(
-                  children: [
-                    Text(source.name, style: const TextStyle(fontSize: 14)),
-                    const Spacer(),
-                    InkWell(
-                      onTap: () => onOpenSource(source),
-                      child: Text(
-                        '查看该 UP 全部 ›',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            final video = videos[index - 1];
-            return SubscriptionVideoCard(
-              video: video,
-              source: source,
-              showNew: sources.unreadBvids.contains(video.bvid),
-              onOpenSource: onOpenSource,
-            );
-          },
-        ),
       );
     });
   }

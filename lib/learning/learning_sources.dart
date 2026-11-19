@@ -45,8 +45,9 @@ class LearningSources {
       );
     this.groups
       ..clear()
-      ..addAll(groups ?? const <String>[])
-      ..add(defaultGroup);
+      ..addAll((groups ?? const <String>[]).toSet())
+      ..remove(defaultGroup)
+      ..insert(0, defaultGroup);
     for (final source in sources) {
       if (!this.groups.contains(source.group)) this.groups.add(source.group);
     }
@@ -173,7 +174,8 @@ class LearningSources {
   List<Map<String, dynamic>> exportJson() =>
       sources.map((source) => source.toJson()).toList();
 
-  List<String> exportGroups() => List<String>.from(groups);
+  List<String> exportGroups() =>
+      groups.where((g) => g != defaultGroup).toSet().toList();
 
   void _persist() {
     _box
