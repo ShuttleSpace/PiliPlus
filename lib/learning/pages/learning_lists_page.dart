@@ -73,11 +73,6 @@ class LearningListsView extends StatelessWidget {
                     icon: const Icon(Icons.add),
                     onPressed: () => createList(context),
                   ),
-                  IconButton(
-                    tooltip: '备份/迁移',
-                    icon: const Icon(Icons.backup_outlined),
-                    onPressed: () => showBackupDialog(context),
-                  ),
                 ],
               ),
             );
@@ -282,7 +277,7 @@ void showBackupDialog(BuildContext context) {
   final library = LearningLibrary.instance;
   showImportExportDialog<Map<String, dynamic>>(
     context,
-    title: '学习清单',
+    title: '清单与订阅',
     onExport: () => jsonEncode(library.toBackup()),
     localFileName: () => 'learning_lists',
     onImport: (json) async {

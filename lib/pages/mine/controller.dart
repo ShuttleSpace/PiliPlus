@@ -1,3 +1,4 @@
+import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -52,6 +53,11 @@ class MineController extends GetxController with AccountMixin {
       icon: Icons.bar_chart,
       title: '学习统计',
       onTap: () => Get.toNamed('/learningHistory'),
+    ),
+    (
+      icon: Icons.backup_outlined,
+      title: '备份迁移',
+      onTap: () => showBackupDialog(Get.context!),
     ),
     (
       icon: CustomIcons.folderDownloadOutline,
