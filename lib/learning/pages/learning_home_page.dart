@@ -2,7 +2,6 @@ import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/pages/learning_lists_page.dart';
 import 'package:PiliPlus/learning/pages/learning_sources_page.dart';
 import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
-import 'package:flutter/material.dart' as fw;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -34,8 +33,8 @@ class _LearningHomePageState extends State<LearningHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return fw.Material(
-      type: fw.MaterialType.transparency,
+    return Material(
+      type: MaterialType.transparency,
       child: Column(
         children: [
           Padding(
@@ -96,8 +95,8 @@ class _LearningHomePageState extends State<LearningHomePage>
               controller: _tabs,
               children: [
                 LearningLocalizations(
-                  child: fw.Material(
-                    type: fw.MaterialType.transparency,
+                  child: Material(
+                    type: MaterialType.transparency,
                     child: LearningListsView(
                       embedded: true,
                       scrollController: _listScroll,
@@ -105,8 +104,8 @@ class _LearningHomePageState extends State<LearningHomePage>
                   ),
                 ),
                 LearningLocalizations(
-                  child: fw.Material(
-                    type: fw.MaterialType.transparency,
+                  child: Material(
+                    type: MaterialType.transparency,
                     child: LearningSourcesView(
                       embedded: true,
                       scrollController: _sourceScroll,

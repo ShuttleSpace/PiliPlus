@@ -8,7 +8,7 @@ import 'package:PiliPlus/learning/widgets/subscription_video_card.dart';
 import 'package:collection/collection.dart';
 import 'package:PiliPlus/learning/widgets/localizations_bridge.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -140,9 +140,9 @@ class _LearningSourcesViewState extends State<LearningSourcesView>
 
   @override
   Widget build(BuildContext context) {
+    final groups = _groups;
+    _syncTabs(groups.length + 2);
     return Obx(() {
-      final groups = _groups;
-      _syncTabs(groups.length + 2);
       final tabs = <String>['全部', ...groups, 'UP'];
       final colorScheme = Theme.of(context).colorScheme;
       final sources = _sources;

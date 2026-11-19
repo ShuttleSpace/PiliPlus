@@ -1,7 +1,7 @@
 import 'package:PiliPlus/learning/learning_progress.dart';
 import 'package:PiliPlus/learning/widgets/open_learning_video.dart';
 import 'package:PiliPlus/learning/learning_list.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 与搜索结果一致的横向视频卡片：封面 + 时长 + 标题 + UP + 本地进度。
 class LearningVideoCard extends StatelessWidget {
@@ -64,9 +64,12 @@ class LearningVideoCard extends StatelessWidget {
                             color: theme.colorScheme.primary,
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: const Text(
+                          child: Text(
                             'NEW',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(
+                              color: theme.colorScheme.onPrimary,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),

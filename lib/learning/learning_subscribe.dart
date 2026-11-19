@@ -2,7 +2,7 @@ import 'package:PiliPlus/learning/learning_library.dart';
 import 'package:PiliPlus/learning/learning_source.dart';
 import 'package:PiliPlus/learning/learning_sources.dart';
 import 'package:PiliPlus/learning/widgets/subscribe_sheet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> subscribeUpArchive({
   required BuildContext context,

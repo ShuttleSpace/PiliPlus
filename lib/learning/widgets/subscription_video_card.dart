@@ -5,7 +5,7 @@ import 'package:PiliPlus/learning/widgets/open_learning_video.dart';
 import 'package:intl/intl.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 订阅流卡片：沿用官方「动态」的头像 + 来源 + 时间 + 视频卡 + 操作行布局，
 /// 但数据源和动作全部是本地的，右上角用「本地」与官方动态区分。
@@ -57,7 +57,10 @@ class SubscriptionVideoCard extends StatelessWidget {
                   )
                 : Text(
                     label,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: theme.colorScheme.onPrimary,
+                      fontSize: 14,
+                    ),
                   ),
           ),
           const SizedBox(width: 10),
@@ -198,9 +201,12 @@ class _VideoCard extends StatelessWidget {
                             color: theme.colorScheme.error,
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: const Text(
+                          child: Text(
                             'NEW',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(
+                              color: theme.colorScheme.onError,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),
