@@ -16,3 +16,5 @@ git merge origin/main
 ```
 
 不要对该分支使用 `push --force`。上游功能若与我们冲突，以「本地规则 + 只读白名单」的冻结规格为准。
+
+CI: pushes to `feat/norecommend` build signed release APKs via GitHub Actions.
